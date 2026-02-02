@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sdthai-web-config
+  namespace: sdthai
+data:
+  NEXT_PUBLIC_API_URL: "http://sdthai-api:3000"
+  NEXT_PUBLIC_APP_NAME: "SD Thai Food"
+  NEXT_PUBLIC_APP_URL: "https://sdthai.secuaas.com"

@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sdthai-ingress
+spec:
+  tls:
+  - hosts:
+    - sdthai-dev.secuaas.dev
+    - api-sdthai-dev.secuaas.dev
+    secretName: sdthai-dev-tls
+  rules:
+  - host: sdthai-dev.secuaas.dev
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sdthai-web
+            port:
+              number: 3000
+  - host: api-sdthai-dev.secuaas.dev
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sdthai-api
+            port:
+              number: 3000

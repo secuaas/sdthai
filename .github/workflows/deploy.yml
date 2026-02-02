@@ -1,0 +1,95 @@
+name: Deploy to Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["Build API Docker Image", "Build Web Docker Image"]
+    types: [completed]
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod' || 'dev') }}
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set environment
+        id: set-env
+        run: |
+          if [ "${{ github.event.inputs.environment }}" != "" ]; then
+            echo "ENV=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "ENV=prod" >> $GITHUB_OUTPUT
+          else
+            echo "ENV=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.28.0'
+
+      - name: Setup kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          kubectl config use-context ${{ steps.set-env.outputs.ENV == 'prod' && 'k8s-prod' || 'k8s-dev' }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          cd infrastructure/k8s
+          ./deploy.sh ${{ steps.set-env.outputs.ENV }} apply
+
+      - name: Wait for rollout
+        run: |
+          NAMESPACE=sdthai-${{ steps.set-env.outputs.ENV }}
+          kubectl rollout status deployment/sdthai-api -n $NAMESPACE --timeout=5m
+          kubectl rollout status deployment/sdthai-web -n $NAMESPACE --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          NAMESPACE=sdthai-${{ steps.set-env.outputs.ENV }}
+          kubectl get all -n $NAMESPACE
+          kubectl get ingress -n $NAMESPACE
+
+      - name: Run smoke tests
+        run: |
+          if [ "${{ steps.set-env.outputs.ENV }}" == "prod" ]; then
+            API_URL="https://api.sdthai.ch"
+            WEB_URL="https://sdthai.ch"
+          else
+            API_URL="https://api-sdthai-dev.secuaas.dev"
+            WEB_URL="https://sdthai-dev.secuaas.dev"
+          fi
+
+          # Test API health
+          curl -f $API_URL/api/health || exit 1
+
+          # Test Web
+          curl -f $WEB_URL || exit 1
+
+          echo "✅ Smoke tests passed!"
+
+      - name: Notify deployment
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          ENV="${{ steps.set-env.outputs.ENV }}"
+          echo "Deployment to $ENV: $STATUS"

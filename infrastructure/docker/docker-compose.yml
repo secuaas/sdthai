@@ -1,0 +1,137 @@
+version: '3.9'
+
+name: sdthai-dev
+
+networks:
+  sdthai:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: sdthai-postgres
+    hostname: postgres
+    networks:
+      - sdthai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: sdthai
+      POSTGRES_USER: sdthai
+      POSTGRES_PASSWORD: sdthai_dev_password
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sdthai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: sdthai-redis
+    hostname: redis
+    networks:
+      - sdthai
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # API Backend (NestJS)
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+      target: builder
+    container_name: sdthai-api
+    hostname: api
+    networks:
+      - sdthai
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://sdthai:sdthai_dev_password@postgres:5432/sdthai?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev_secret_key_change_in_production_min_32_characters
+      JWT_REFRESH_SECRET: dev_refresh_secret_key_change_in_production_min_32_characters
+      CORS_ORIGIN: http://localhost:3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run start:dev
+    volumes:
+      - ../../apps/api/src:/app/apps/api/src
+      - ../../packages/prisma:/app/packages/prisma
+    restart: unless-stopped
+
+  # Web Frontend (Next.js)
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      target: builder
+    container_name: sdthai-web
+    hostname: web
+    networks:
+      - sdthai
+    ports:
+      - "3001:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3000/api
+    depends_on:
+      - api
+    command: npm run dev
+    volumes:
+      - ../../apps/web/app:/app/apps/web/app
+      - ../../apps/web/components:/app/apps/web/components
+      - ../../apps/web/lib:/app/apps/web/lib
+    restart: unless-stopped
+
+  # Adminer (Database UI)
+  adminer:
+    image: adminer:latest
+    container_name: sdthai-adminer
+    networks:
+      - sdthai
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # Redis Commander (Redis UI)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: sdthai-redis-commander
+    networks:
+      - sdthai
+    ports:
+      - "8081:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    depends_on:
+      - redis
+    restart: unless-stopped

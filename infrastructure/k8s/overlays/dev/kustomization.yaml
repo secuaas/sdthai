@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: sdthai-dev
+
+bases:
+- ../../base
+
+namePrefix: dev-
+
+commonLabels:
+  environment: development
+  app.kubernetes.io/instance: sdthai-dev
+
+images:
+- name: registry/sdthai-api
+  newTag: dev
+- name: registry/sdthai-web
+  newTag: dev
+
+patches:
+- path: api-patch.yaml
+  target:
+    kind: Deployment
+    name: sdthai-api
+- path: web-patch.yaml
+  target:
+    kind: Deployment
+    name: sdthai-web
+- path: ingress-patch.yaml
+  target:
+    kind: Ingress
+    name: sdthai-ingress
+
+configMapGenerator:
+- name: sdthai-api-config
+  behavior: merge
+  literals:
+  - DATABASE_URL=postgresql://user:password@postgres:5432/sdthai_dev
+  - REDIS_URL=redis://redis:6379/1
+  - CORS_ORIGIN=https://sdthai-dev.secuaas.dev
+
+- name: sdthai-web-config
+  behavior: merge
+  literals:
+  - NEXT_PUBLIC_API_URL=https://api-sdthai-dev.secuaas.dev

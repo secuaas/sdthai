@@ -1,0 +1,109 @@
+name: CI - Lint and Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: sdthai_test
+          POSTGRES_USER: sdthai
+          POSTGRES_PASSWORD: sdthai_test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8.15.4
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: postgresql://sdthai:sdthai_test_password@localhost:5432/sdthai_test?schema=public
+
+      - name: Run Prisma Migrations
+        run: cd packages/prisma && pnpm prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://sdthai:sdthai_test_password@localhost:5432/sdthai_test?schema=public
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test API
+        run: cd apps/api && pnpm test
+        env:
+          DATABASE_URL: postgresql://sdthai:sdthai_test_password@localhost:5432/sdthai_test?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test_secret_key_minimum_32_characters_required
+          JWT_REFRESH_SECRET: test_refresh_secret_key_minimum_32_characters
+
+      - name: Test Web
+        run: cd apps/web && pnpm test
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3000/api
+
+      - name: Build API
+        run: cd apps/api && pnpm build
+
+      - name: Build Web
+        run: cd apps/web && pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3000/api
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./apps/api/coverage/lcov.info,./apps/web/coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella

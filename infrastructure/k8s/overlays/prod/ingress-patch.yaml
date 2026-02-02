@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sdthai-ingress
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-compress@kubernetescrd,default-security-headers@kubernetescrd
+spec:
+  tls:
+  - hosts:
+    - sdthai.ch
+    - www.sdthai.ch
+    - api.sdthai.ch
+    secretName: sdthai-prod-tls
+  rules:
+  - host: sdthai.ch
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sdthai-web
+            port:
+              number: 3000
+  - host: www.sdthai.ch
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sdthai-web
+            port:
+              number: 3000
+  - host: api.sdthai.ch
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sdthai-api
+            port:
+              number: 3000

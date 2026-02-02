@@ -1,44 +1,63 @@
-# Configuration SecuOps pour sdthai
+# Configuration SecuOps pour SD Thai Food
 app:
   name: sdthai
-  type: fullstack
+  type: monorepo
   version: 1.0.0
-  description: SDThai Platform
+  description: SD Thai Food Platform - Complete restaurant management system
 
 # Configuration Git
 git:
-  repo: https://github.com/secuaas/sdthai.git
+  repo: git@github.com:secuaas/sdthai.git
   branch: main
 
-# Configuration de build
+# Configuration de build multi-services
 build:
-  dockerfile: Dockerfile
-  context: .
   registry: qq9o8vqe.c1.bhs5.container-registry.ovh.net
   namespace: secuops
 
-# Configuration de déploiement
+  services:
+    api:
+      dockerfile: apps/api/Dockerfile
+      context: .
+      image: sdthai-api
+      healthcheck: /api/health
+
+    web:
+      dockerfile: apps/web/Dockerfile
+      context: .
+      image: sdthai-web
+      healthcheck: /
+
+# Configuration de déploiement Kustomize
 deploy:
   kubernetes:
-    manifests: deploy/k8s/deployment.yaml
-    namespace: sdthai
+    type: kustomize
+    base: infrastructure/k8s/base
 
   dev:
-    replicas: 1
-    domain: secuaas.dev
+    overlay: infrastructure/k8s/overlays/dev
+    namespace: sdthai-dev
+    domain: sdthai-dev.secuaas.dev
+    replicas:
+      api: 1
+      web: 1
 
   prod:
-    replicas: 2
-    domain: secuaas.dev
+    overlay: infrastructure/k8s/overlays/prod
+    namespace: sdthai-prod
+    domain: sdthai.ch
+    replicas:
+      api: 3
+      web: 2
 
 # Tests
 tests:
   enabled: true
-  backend:
-    command: go test ./...
+  api:
+    command: cd apps/api && pnpm test
     coverage: true
-  frontend:
-    command: npm test
+  web:
+    command: cd apps/web && pnpm test
     coverage: true
 
 # Audit et conformité
@@ -48,15 +67,45 @@ audit:
     - dockerfile-security
     - kubernetes-best-practices
     - dependencies-vulnerabilities
+    - prisma-security
+    - secrets-leak-prevention
     - code-quality
 
 # Health checks
 health:
-  backend:
+  api:
     endpoint: /api/health
     timeout: 5s
     interval: 10s
-  frontend:
+  web:
     endpoint: /
     timeout: 5s
     interval: 10s
+
+# Secrets requis (créés manuellement dans K8s)
+secrets:
+  required:
+    - DATABASE_URL
+    - REDIS_URL
+    - JWT_SECRET
+    - JWT_REFRESH_SECRET
+    - S3_ENDPOINT
+    - S3_ACCESS_KEY
+    - S3_SECRET_KEY
+    - RESEND_API_KEY
+    - PRINTER_EMAIL
+    - BEXIO_CLIENT_ID
+    - BEXIO_CLIENT_SECRET
+    - GOOGLE_MAPS_API_KEY
+
+# Hooks
+hooks:
+  pre-build:
+    - pnpm install
+    - pnpm db:generate
+  post-build:
+    - echo "Build completed for sdthai"
+  pre-deploy:
+    - kubectl get nodes
+  post-deploy:
+    - kubectl get all -n ${NAMESPACE}

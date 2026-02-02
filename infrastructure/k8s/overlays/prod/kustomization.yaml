@@ -1,0 +1,50 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: sdthai-prod
+
+bases:
+- ../../base
+
+namePrefix: prod-
+
+commonLabels:
+  environment: production
+  app.kubernetes.io/instance: sdthai-prod
+
+images:
+- name: registry/sdthai-api
+  newTag: latest
+- name: registry/sdthai-web
+  newTag: latest
+
+resources:
+- api-hpa.yaml
+- web-hpa.yaml
+
+patches:
+- path: api-patch.yaml
+  target:
+    kind: Deployment
+    name: sdthai-api
+- path: web-patch.yaml
+  target:
+    kind: Deployment
+    name: sdthai-web
+- path: ingress-patch.yaml
+  target:
+    kind: Ingress
+    name: sdthai-ingress
+
+configMapGenerator:
+- name: sdthai-api-config
+  behavior: merge
+  literals:
+  - DATABASE_URL=postgresql://user:password@postgres:5432/sdthai_prod
+  - REDIS_URL=redis://redis:6379/0
+  - CORS_ORIGIN=https://sdthai.ch,https://www.sdthai.ch
+
+- name: sdthai-web-config
+  behavior: merge
+  literals:
+  - NEXT_PUBLIC_API_URL=https://api.sdthai.ch

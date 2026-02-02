@@ -1,0 +1,464 @@
+// SD Thai Food - Complete Prisma Schema
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum PartnerType {
+  DEPOT_VENTE   // Consignment, periodic billing
+  VENTE_DIRECTE // Direct sale, billing on delivery
+  AUTOMATE      // Vending machines managed by SD Thai
+}
+
+enum UserRole {
+  SUPER_ADMIN   // SD Thai admin (full access)
+  PARTNER_ADMIN // Partner admin (users + orders)
+  PARTNER_USER  // Partner user (orders only)
+  DRIVER        // Delivery driver (mobile app)
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  CONFIRMED
+  IN_PRODUCTION
+  READY
+  IN_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum BatchStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum StockMovementType {
+  IN_PRODUCTION
+  OUT_DELIVERY
+  OUT_RETURN
+  ADJUSTMENT
+}
+
+// ============================================
+// USER & AUTH
+// ============================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  phone         String?
+  role          UserRole
+  partnerId     String?
+  partner       Partner?  @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  refreshTokens RefreshToken[]
+  orders        Order[]
+  deliveries    Delivery[]     @relation("DriverDeliveries")
+  auditLogs     AuditLog[]
+
+  @@index([email])
+  @@index([partnerId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+// ============================================
+// PARTNERS
+// ============================================
+
+model Partner {
+  id                String      @id @default(uuid())
+  type              PartnerType
+  name              String
+  legalName         String?
+  vatNumber         String?
+  address           String
+  postalCode        String
+  city              String
+  canton            String?
+  country           String      @default("CH")
+  latitude          Decimal     @db.Decimal(10, 8)
+  longitude         Decimal     @db.Decimal(11, 8)
+  contactName       String?
+  phone             String?
+  email             String?
+
+  // Delivery config
+  deliveryDays      Json        @default("[\"MONDAY\",\"THURSDAY\"]")
+  orderDeadlineTime String      @default("18:00")
+  orderDeadlineDays Int         @default(1)
+
+  // Billing config (for DEPOT_VENTE)
+  billingPeriod     String?     @default("MONTHLY")
+  billingDay        Int?        @default(1)
+
+  // Integrations
+  bexioContactId    Int?
+  googlePlaceId     String?
+
+  isActive          Boolean     @default(true)
+  isPublic          Boolean     @default(true)
+
+  users             User[]
+  orders            Order[]
+  deliveries        Delivery[]
+  invoices          Invoice[]
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([type])
+  @@index([isActive, isPublic])
+  @@map("partners")
+}
+
+// ============================================
+// PRODUCTS
+// ============================================
+
+model Category {
+  id          String    @id @default(uuid())
+  nameFr      String
+  nameDe      String?
+  nameEn      String?
+  slug        String    @unique
+  description String?   @db.Text
+  imageUrl    String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id              String         @id @default(uuid())
+  sku             String         @unique
+  barcode         String         @unique
+  nameFr          String
+  nameDe          String?
+  nameEn          String?
+  descriptionFr   String?        @db.Text
+  descriptionDe   String?        @db.Text
+  descriptionEn   String?        @db.Text
+  priceB2b        Decimal        @db.Decimal(10, 2)
+  priceB2c        Decimal        @db.Decimal(10, 2)
+  shelfLifeDays   Int            @default(17)
+  weight          Int?
+  allergens       String[]
+  isVegetarian    Boolean        @default(false)
+  isVegan         Boolean        @default(false)
+  isGlutenFree    Boolean        @default(false)
+  spicyLevel      Int            @default(0)
+  categoryId      String
+  category        Category       @relation(fields: [categoryId], references: [id])
+  bexioArticleId  Int?
+  minStockAlert   Int            @default(10)
+  isActive        Boolean        @default(true)
+
+  images          ProductImage[]
+  stockEntries    StockEntry[]
+  orderItems      OrderItem[]
+  batchItems      BatchItem[]
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([categoryId])
+  @@index([sku])
+  @@index([barcode])
+  @@index([isActive])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  sortOrder Int      @default(0)
+  isMain    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// ============================================
+// ORDERS
+// ============================================
+
+model Order {
+  id             String      @id @default(uuid())
+  orderNumber    String      @unique // ORD-YYYYMMDD-XXXX
+  partnerId      String
+  partner        Partner     @relation(fields: [partnerId], references: [id])
+  userId         String
+  user           User        @relation(fields: [userId], references: [id])
+  status         OrderStatus @default(DRAFT)
+  orderDate      DateTime    @default(now())
+  requestedDate  DateTime    @db.Date
+  isUrgent       Boolean     @default(false)
+  urgentReason   String?     @db.Text
+  urgentApproved Boolean?
+  subtotal       Decimal     @db.Decimal(10, 2)
+  vatAmount      Decimal     @db.Decimal(10, 2)
+  total          Decimal     @db.Decimal(10, 2)
+  notes          String?     @db.Text
+
+  items          OrderItem[]
+  delivery       Delivery?
+  invoice        Invoice?
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([partnerId])
+  @@index([userId])
+  @@index([status])
+  @@index([orderNumber])
+  @@index([requestedDate])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  batchId     String?  // For traceability after delivery
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  subtotal    Decimal  @db.Decimal(10, 2)
+  vatRate     Decimal  @db.Decimal(5, 4) @default(0.081)
+  vatAmount   Decimal  @db.Decimal(10, 2)
+  total       Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// ============================================
+// PRODUCTION
+// ============================================
+
+model ProductionBatch {
+  id             String      @id @default(uuid())
+  batchNumber    String      @unique // YYYYMMDD-XXX
+  productionDate DateTime    @db.Date
+  expiryDate     DateTime    @db.Date
+  status         BatchStatus @default(PLANNED)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  notes          String?     @db.Text
+
+  items          BatchItem[]
+  stockEntries   StockEntry[]
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([batchNumber])
+  @@index([productionDate])
+  @@index([status])
+  @@map("production_batches")
+}
+
+model BatchItem {
+  id              String          @id @default(uuid())
+  batchId         String
+  batch           ProductionBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product         @relation(fields: [productId], references: [id])
+  plannedQuantity Int
+  actualQuantity  Int?
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([batchId])
+  @@index([productId])
+  @@map("batch_items")
+}
+
+// ============================================
+// STOCK
+// ============================================
+
+model StockEntry {
+  id               String            @id @default(uuid())
+  productId        String
+  product          Product           @relation(fields: [productId], references: [id])
+  batchId          String
+  batch            ProductionBatch   @relation(fields: [batchId], references: [id])
+  initialQuantity  Int
+  quantity         Int // Remaining quantity (FIFO)
+  reservedQuantity Int               @default(0)
+
+  movements        StockMovement[]
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([productId, batchId])
+  @@index([quantity])
+  @@map("stock_entries")
+}
+
+model StockMovement {
+  id           String            @id @default(uuid())
+  stockEntryId String
+  stockEntry   StockEntry        @relation(fields: [stockEntryId], references: [id])
+  type         StockMovementType
+  quantity     Int
+  reference    String? // Order ID, delivery ID, etc.
+  notes        String? @db.Text
+  createdAt    DateTime          @default(now())
+
+  @@index([stockEntryId])
+  @@index([type])
+  @@index([reference])
+  @@map("stock_movements")
+}
+
+// ============================================
+// DELIVERIES
+// ============================================
+
+model Delivery {
+  id            String         @id @default(uuid())
+  orderId       String         @unique
+  order         Order          @relation(fields: [orderId], references: [id])
+  partnerId     String
+  partner       Partner        @relation(fields: [partnerId], references: [id])
+  driverId      String?
+  driver        User?          @relation("DriverDeliveries", fields: [driverId], references: [id], onDelete: SetNull)
+  scheduledDate DateTime       @db.Date
+  routeOrder    Int?
+  status        DeliveryStatus @default(PENDING)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  signatureKey  String? // S3 key for signature image
+  signedBy      String?
+  photoKeys     String[] // S3 keys for delivery photos
+  notes         String?  @db.Text
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([orderId])
+  @@index([partnerId])
+  @@index([driverId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@map("deliveries")
+}
+
+// ============================================
+// INVOICES
+// ============================================
+
+model Invoice {
+  id             String        @id @default(uuid())
+  invoiceNumber  String        @unique // INV-YYYYMMDD-XXXX
+  orderId        String?       @unique
+  order          Order?        @relation(fields: [orderId], references: [id])
+  partnerId      String
+  partner        Partner       @relation(fields: [partnerId], references: [id])
+  status         InvoiceStatus @default(DRAFT)
+  invoiceDate    DateTime      @db.Date
+  dueDate        DateTime      @db.Date
+  subtotal       Decimal       @db.Decimal(10, 2)
+  vatAmount      Decimal       @db.Decimal(10, 2)
+  total          Decimal       @db.Decimal(10, 2)
+  pdfUrl         String? // S3 URL
+  bexioInvoiceId Int?
+  sentAt         DateTime?
+  paidAt         DateTime?
+  notes          String?       @db.Text
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([partnerId])
+  @@index([invoiceNumber])
+  @@index([status])
+  @@index([invoiceDate])
+  @@map("invoices")
+}
+
+// ============================================
+// AUDIT LOG
+// ============================================
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String
+  changes   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

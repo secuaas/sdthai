@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sdthai-ingress
+  labels:
+    app: sdthai-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/redirect-scheme: https
+    traefik.ingress.kubernetes.io/redirect-permanent: "true"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - sdthai.ch
+    - www.sdthai.ch
+    - api.sdthai.ch
+    secretName: sdthai-tls
+  rules:
+  - host: sdthai.ch
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sdthai-web
+            port:
+              number: 3000
+  - host: www.sdthai.ch
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sdthai-web
+            port:
+              number: 3000
+  - host: api.sdthai.ch
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sdthai-api
+            port:
+              number: 3000

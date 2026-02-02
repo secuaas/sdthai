@@ -1,0 +1,26 @@
+# Fichiers de secrets générés
+secrets-*.txt
+*.secret
+*.key
+*.pem
+
+# Fichiers de sortie temporaires
+/tmp/
+*.tmp
+*.temp
+
+# Fichiers générés par Kustomize
+kustomization-*.yaml
+
+# Fichiers de backup
+*.bak
+*.backup
+
+# Fichiers de test locaux
+test-*.yaml
+local-*.yaml
+
+# Ne JAMAIS committer ces fichiers
+*-secrets.yaml
+credentials.yaml
+passwords.yaml

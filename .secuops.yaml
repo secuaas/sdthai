@@ -1,0 +1,62 @@
+# Configuration SecuOps pour sdthai
+app:
+  name: sdthai
+  type: fullstack
+  version: 1.0.0
+  description: SDThai Platform
+
+# Configuration Git
+git:
+  repo: https://github.com/secuaas/sdthai.git
+  branch: main
+
+# Configuration de build
+build:
+  dockerfile: Dockerfile
+  context: .
+  registry: qq9o8vqe.c1.bhs5.container-registry.ovh.net
+  namespace: secuops
+
+# Configuration de déploiement
+deploy:
+  kubernetes:
+    manifests: deploy/k8s/deployment.yaml
+    namespace: sdthai
+
+  dev:
+    replicas: 1
+    domain: secuaas.dev
+
+  prod:
+    replicas: 2
+    domain: secuaas.dev
+
+# Tests
+tests:
+  enabled: true
+  backend:
+    command: go test ./...
+    coverage: true
+  frontend:
+    command: npm test
+    coverage: true
+
+# Audit et conformité
+audit:
+  enabled: true
+  checks:
+    - dockerfile-security
+    - kubernetes-best-practices
+    - dependencies-vulnerabilities
+    - code-quality
+
+# Health checks
+health:
+  backend:
+    endpoint: /api/health
+    timeout: 5s
+    interval: 10s
+  frontend:
+    endpoint: /
+    timeout: 5s
+    interval: 10s

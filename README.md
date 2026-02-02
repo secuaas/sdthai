@@ -1,135 +1,47 @@
-# sdthai
+# SD Thai Food Platform
 
-Application Fullstack générée par SecuOps v2.0
+Plateforme de gestion complète pour SD Thai Food Sàrl - Restaurant thaïlandais authentique à Lausanne.
 
 ## Description
 
-SDThai Platform
+Système de gestion intégré comprenant:
+- Site web public multilingue (FR/DE/EN)
+- Portail partenaires B2B
+- Back-office administration
+- Application mobile livreur (Flutter)
+- Intégrations: Bexio, HP ePrint, OVH S3
 
-## Architecture
+## Documentation
 
-Cette application fullstack comprend:
-- **Frontend**: React + Vite
-- **Backend**: Go API (Gin framework)
+Voir [ARCHITECTURE.md](./ARCHITECTURE.md) pour la spécification technique complète.
 
 ## Développement
 
-### Prérequis
+**Note**: Ce projet est en cours de développement initial. L'architecture cible est documentée dans ARCHITECTURE.md.
 
-- Go 1.21+
-- Node.js 18+
-- Docker
-- kubectl (pour déploiement K8s)
+### Stack Technique
 
-### Installation locale
-
-#### Backend
-
-```bash
-cd backend
-go mod download
-go run cmd/server/main.go
-```
-
-Le backend sera accessible sur http://localhost:8080
-
-#### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Le frontend sera accessible sur http://localhost:5173
-
-### Endpoints API
-
-- `GET /api/health` - Health check
-- `GET /api/v1/` - Point d'entrée API
+- **Frontend Web**: Next.js 14 + shadcn/ui + Tailwind
+- **Backend API**: NestJS 10 + Prisma
+- **Base de données**: PostgreSQL 15+
+- **Cache/Queue**: Redis + BullMQ
+- **Mobile**: Flutter 3.x
+- **Déploiement**: Kubernetes OVH via SecuOps
 
 ## Build et Déploiement
 
-### Build local
+### Avec SecuOps
 
 ```bash
-# Builder l'image Docker
+# Build
 secuops build --app=sdthai
-```
 
-### Déployer en dev
-
-```bash
+# Déployer en dev
 secuops deploy --app=sdthai --env=k8s-dev
-```
 
-### Déployer en production
-
-```bash
+# Déployer en production
 secuops deploy --app=sdthai --env=k8s-prod
 ```
-
-## Tests
-
-```bash
-# Tests backend
-secuops test --app=sdthai --component=backend
-
-# Tests frontend
-secuops test --app=sdthai --component=frontend
-```
-
-## Audit de conformité
-
-```bash
-# Vérifier la conformité du projet
-secuops audit --app=sdthai
-```
-
-## Architecture du projet
-
-```
-sdthai/
-├── backend/
-│   ├── cmd/
-│   │   └── server/
-│   │       └── main.go          # Point d'entrée backend
-│   ├── internal/
-│   │   ├── handlers/            # HTTP handlers
-│   │   ├── models/              # Data models
-│   │   └── config/              # Configuration
-│   ├── go.mod                   # Dépendances Go
-│   └── go.sum
-├── frontend/
-│   ├── src/
-│   │   ├── App.tsx              # Composant principal
-│   │   ├── main.tsx             # Point d'entrée
-│   │   └── components/          # Composants React
-│   ├── package.json             # Dépendances NPM
-│   ├── vite.config.ts           # Configuration Vite
-│   └── tsconfig.json            # Configuration TypeScript
-├── deploy/
-│   └── k8s/
-│       └── deployment.yaml      # Kubernetes manifests
-├── Dockerfile                   # Image Docker multi-stage
-└── README.md                    # Documentation
-```
-
-## Configuration
-
-### Backend
-
-Variables d'environnement:
-
-- `PORT` - Port du serveur (défaut: 8080)
-- `ENV` - Environnement (development/production)
-- `CORS_ORIGINS` - Origines CORS autorisées
-
-### Frontend
-
-Variables d'environnement (.env):
-
-- `VITE_API_URL` - URL de l'API backend
 
 ## Support
 

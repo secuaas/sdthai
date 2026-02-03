@@ -1,0 +1,125 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sdthai
+  labels:
+    name: sdthai
+    app: sdthai
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sdthai-secrets
+  namespace: sdthai
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://sdthai:changeme@postgres.sdthai:5432/sdthai?schema=public"
+  REDIS_URL: "redis://redis.sdthai:6379"
+  JWT_SECRET: "changeme-minimum-32-characters-required-changeme"
+  JWT_REFRESH_SECRET: "changeme-refresh-minimum-32-characters-changeme"
+  NEXT_PUBLIC_API_URL: "http://localhost:3000/api"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sdthai-api
+  namespace: sdthai
+  labels:
+    app: sdthai
+    component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sdthai
+      component: api
+  template:
+    metadata:
+      labels:
+        app: sdthai
+        component: api
+    spec:
+      containers:
+      - name: api
+        image: qq9o8vqe.c1.bhs5.container-registry.ovh.net/secuops/sdthai:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          name: http
+        envFrom:
+        - secretRef:
+            name: sdthai-secrets
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sdthai-api
+  namespace: sdthai
+  labels:
+    app: sdthai
+    component: api
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  selector:
+    app: sdthai
+    component: api
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sdthai-ingress
+  namespace: sdthai
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - sdthai-dev.secuaas.dev
+    secretName: sdthai-tls
+  rules:
+  - host: sdthai-dev.secuaas.dev
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sdthai-api
+            port:
+              number: 3000

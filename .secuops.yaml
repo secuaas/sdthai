@@ -1,62 +1,43 @@
 # Configuration SecuOps pour SD Thai Food
 app:
   name: sdthai
-  type: monorepo
+  type: fullstack
   version: 1.0.0
-  description: SD Thai Food Platform - Complete restaurant management system
+  description: SD Thai Food Platform - Complete restaurant management system (NestJS + Next.js)
 
 # Configuration Git
 git:
   repo: git@github.com:secuaas/sdthai.git
   branch: main
 
-# Configuration de build multi-services
+# Configuration de build
 build:
+  dockerfile: Dockerfile
+  context: .
   registry: qq9o8vqe.c1.bhs5.container-registry.ovh.net
   namespace: secuops
 
-  services:
-    api:
-      dockerfile: apps/api/Dockerfile
-      context: .
-      image: sdthai-api
-      healthcheck: /api/health
-
-    web:
-      dockerfile: apps/web/Dockerfile
-      context: .
-      image: sdthai-web
-      healthcheck: /
-
-# Configuration de déploiement Kustomize
+# Configuration de déploiement
 deploy:
   kubernetes:
-    type: kustomize
-    base: infrastructure/k8s/base
+    manifests: deploy/k8s/deployment.yaml
+    namespace: sdthai
 
   dev:
-    overlay: infrastructure/k8s/overlays/dev
-    namespace: sdthai-dev
+    replicas: 1
     domain: sdthai-dev.secuaas.dev
-    replicas:
-      api: 1
-      web: 1
 
   prod:
-    overlay: infrastructure/k8s/overlays/prod
-    namespace: sdthai-prod
+    replicas: 2
     domain: sdthai.ch
-    replicas:
-      api: 3
-      web: 2
 
 # Tests
 tests:
   enabled: true
-  api:
+  backend:
     command: cd apps/api && pnpm test
     coverage: true
-  web:
+  frontend:
     command: cd apps/web && pnpm test
     coverage: true
 
@@ -73,11 +54,11 @@ audit:
 
 # Health checks
 health:
-  api:
+  backend:
     endpoint: /api/health
     timeout: 5s
     interval: 10s
-  web:
+  frontend:
     endpoint: /
     timeout: 5s
     interval: 10s
@@ -89,20 +70,12 @@ secrets:
     - REDIS_URL
     - JWT_SECRET
     - JWT_REFRESH_SECRET
-    - S3_ENDPOINT
-    - S3_ACCESS_KEY
-    - S3_SECRET_KEY
-    - RESEND_API_KEY
-    - PRINTER_EMAIL
-    - BEXIO_CLIENT_ID
-    - BEXIO_CLIENT_SECRET
-    - GOOGLE_MAPS_API_KEY
+    - NEXT_PUBLIC_API_URL
 
 # Hooks
 hooks:
   pre-build:
-    - pnpm install
-    - pnpm db:generate
+    - echo "Starting SD Thai Food build..."
   post-build:
     - echo "Build completed for sdthai"
   pre-deploy:

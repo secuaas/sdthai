@@ -88,8 +88,11 @@ RUN npm install -g pnpm@8.15.4
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
 
+# Install Prisma CLI globally for generate command
+RUN npm install -g prisma@5.22.0
+
 # Generate Prisma client for production
-RUN cd packages/prisma && pnpm db:generate
+RUN cd packages/prisma && prisma generate
 
 # ============================================================================
 # Stage 4: Final Runtime Image

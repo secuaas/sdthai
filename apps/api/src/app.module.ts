@@ -8,6 +8,9 @@ import { PartnersModule } from './modules/partners/partners.module';
 import { ProductsModule } from './modules/products/products.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
+import { PartnerSessionsModule } from './modules/partner-sessions/partner-sessions.module';
+import { PosModule } from './modules/pos/pos.module';
+import { ReturnsModule } from './modules/returns/returns.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -21,6 +24,9 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     ProductsModule,
     OrdersModule,
     HealthModule,
+    PartnerSessionsModule,
+    PosModule,
+    ReturnsModule,
   ],
   providers: [
     {

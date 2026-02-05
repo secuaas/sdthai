@@ -25,8 +25,14 @@ export class OrdersService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Validate deadline and get deadline info
+    let deadlineInfo = {
+      deadlineType: 'STANDARD',
+      requiresApproval: false,
+    };
+
     if (!createOrderDto.isUrgent) {
-      this.validateDeliveryDeadline(partner, requestedDate);
+      deadlineInfo = this.validateDeliveryDeadline(partner, requestedDate);
     }
 
     let subtotal = 0;
@@ -72,11 +78,13 @@ export class OrdersService {
         orderNumber,
         partnerId: createOrderDto.partnerId,
         userId,
-        status: createOrderDto.isUrgent ? OrderStatus.PENDING : OrderStatus.CONFIRMED,
+        status: (createOrderDto.isUrgent || deadlineInfo.requiresApproval) ? OrderStatus.PENDING : OrderStatus.CONFIRMED,
         requestedDate,
         isUrgent: createOrderDto.isUrgent || false,
         urgentReason: createOrderDto.urgentReason,
         urgentApproved: createOrderDto.isUrgent ? null : undefined,
+        deadlineType: deadlineInfo.deadlineType as any,
+        requiresApproval: deadlineInfo.requiresApproval,
         subtotal,
         vatAmount,
         total,
@@ -190,7 +198,9 @@ export class OrdersService {
       const requestedDate = new Date(updateOrderDto.requestedDate);
 
       if (!order.isUrgent) {
-        this.validateDeliveryDeadline(order.partner, requestedDate);
+        const deadlineInfo = this.validateDeliveryDeadline(order.partner, requestedDate);
+        updateData.deadlineType = deadlineInfo.deadlineType;
+        updateData.requiresApproval = deadlineInfo.requiresApproval;
       }
 
       updateData.requestedDate = requestedDate;
@@ -303,12 +313,16 @@ export class OrdersService {
     return { message: 'Order cancelled successfully' };
   }
 
-  private validateDeliveryDeadline(partner: any, requestedDate: Date) {
-    // MVP: Validation simplifiée basée sur fixedDeliveryDays
-    // TODO: Implémenter validation complète avec deadline 20h pour J+2
-
+  private validateDeliveryDeadline(partner: any, requestedDate: Date): {
+    deadlineType: string;
+    requiresApproval: boolean;
+  } {
+    // Validate fixed delivery days
     if (!partner.fixedDeliveryDays) {
-      return; // Pas de jours fixes définis
+      return {
+        deadlineType: 'STANDARD',
+        requiresApproval: false,
+      };
     }
 
     const fixedDays = Array.isArray(partner.fixedDeliveryDays)
@@ -322,6 +336,41 @@ export class OrdersService {
       const allowedDays = fixedDays.map((d: number) => dayNames[d]).join(', ');
       throw new BadRequestException(
         `Les livraisons pour ce partenaire sont uniquement disponibles: ${allowedDays}`,
+      );
+    }
+
+    // Validate deadline: order must be placed by 20:00 two days before delivery
+    const now = new Date();
+    const deliveryDate = new Date(requestedDate);
+    deliveryDate.setHours(0, 0, 0, 0);
+
+    // Calculate deadline: 20:00 two days before delivery
+    const deadlineDate = new Date(deliveryDate);
+    deadlineDate.setDate(deadlineDate.getDate() - 2);
+    deadlineDate.setHours(20, 0, 0, 0);
+
+    // Late deadline: 05:00 on delivery day - 1
+    const lateDeadlineDate = new Date(deliveryDate);
+    lateDeadlineDate.setDate(lateDeadlineDate.getDate() - 1);
+    lateDeadlineDate.setHours(5, 0, 0, 0);
+
+    if (now <= deadlineDate) {
+      // On time
+      return {
+        deadlineType: 'STANDARD',
+        requiresApproval: false,
+      };
+    } else if (now <= lateDeadlineDate) {
+      // Late but before 5am - requires approval
+      return {
+        deadlineType: 'LATE',
+        requiresApproval: true,
+      };
+    } else {
+      // Too late - derogation needed
+      throw new BadRequestException(
+        `La date limite pour cette livraison était le ${deadlineDate.toLocaleDateString('fr-FR')} à 20h00. ` +
+        `Veuillez contacter l'administrateur pour une dérogation.`,
       );
     }
   }

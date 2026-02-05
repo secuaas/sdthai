@@ -1,0 +1,33 @@
+---
+# Job pour exécuter les migrations Prisma
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prisma-migrate
+  namespace: sdthai
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: registry-secret
+      containers:
+      - name: migrate
+        image: qq9o8vqe.c1.bhs5.container-registry.ovh.net/secuops/sdthai:latest
+        command:
+          - sh
+          - -c
+          - |
+            cd /app/packages/prisma
+            /app/node_modules/.pnpm/node_modules/.bin/prisma db push --accept-data-loss
+        envFrom:
+        - secretRef:
+            name: sdthai-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

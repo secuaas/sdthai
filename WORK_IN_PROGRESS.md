@@ -1,13 +1,13 @@
 # Travaux en Cours - SD Thai Food
 
 ## Dernière mise à jour
-2026-02-05 17:50 UTC
+2026-02-05 18:20 UTC
 
 ## Version Actuelle
-0.3.0
+0.3.1
 
 ## Statut
-✅ **Architecture Updates Phase 1 complète**
+✅ **Architecture Updates Phase 1 complète + Tests validés**
 
 ## Session 2026-02-05
 
@@ -198,7 +198,7 @@ Role: SUPER_ADMIN
   - validateDeliveryDeadline() retourne deadlineType et requiresApproval
 - `apps/api/src/app.module.ts`
   - Imports PartnerSessionsModule, PosModule, ReturnsModule
-- `VERSION.md` - Version 0.3.0
+- `VERSION.md` - Version 0.3.1
 - `WORK_IN_PROGRESS.md` - Ce fichier
 
 ### Commits

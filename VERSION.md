@@ -1,11 +1,48 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.3.0** - 2026-02-05
+**0.3.1** - 2026-02-05
 
 ---
 
 ## Versions
+
+### 0.3.1 - 2026-02-05
+**Commit:** `9856154`
+**Type:** Patch - Correctifs authentification + Tests complets
+
+**Changements:**
+- ✅ Correction endpoints partner-sessions (request/validate maintenant publics)
+- ✅ Correction extraction userId dans POS et Returns controllers
+- ✅ Tests end-to-end de toutes les fonctionnalités
+- ✅ Création données de test:
+  - 1 session partenaire (code: 543BEO)
+  - 1 transaction POS (39.46 CHF)
+  - 1 retour avec photo (APPROVED)
+- ✅ Documentation API complète (API_EXAMPLES.md)
+
+**Problèmes Résolus:**
+- Partner sessions request retournait 401 (nécessitait auth alors que public)
+- POS/Returns utilisaient req.user.userId au lieu de req.user.id
+- Port configuration reset à chaque déploiement (service targetPort 80→3000)
+
+**Tests effectués:**
+- ✅ Partner Sessions workflow complet
+- ✅ POS transactions avec calcul automatique
+- ✅ Returns avec photos et approbation
+- ✅ Tous les endpoints accessibles et fonctionnels
+- ✅ Script de test automatisé créé et validé
+
+**Documentation ajoutée:**
+- API_EXAMPLES.md avec exemples curl pour tous les endpoints
+- Exemples de réponses pour chaque endpoint
+- Documentation des règles de deadline
+- Liste des données de test créées
+
+**Commits inclus:**
+- `9856154` - fix: Correct authentication issues in new modules
+
+---
 
 ### 0.3.0 - 2026-02-05
 **Commit:** `720961e`

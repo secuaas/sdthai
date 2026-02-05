@@ -28,13 +28,13 @@ export default function AdminDashboard() {
 
       const orders = ordersRes.data;
       const revenue = orders
-        .filter((o) => o.statut === 'LIVREE')
-        .reduce((sum, o) => sum + o.montantTotal, 0);
+        .filter((o) => o.statut === 'LIVREE' || o.status === 'DELIVERED')
+        .reduce((sum, o) => sum + (o.total || o.montantTotal || 0), 0);
 
       setStats({
         totalPartners: partnersRes.meta.total,
         totalOrders: ordersRes.meta.total,
-        pendingOrders: orders.filter((o) => o.statut === 'EN_ATTENTE').length,
+        pendingOrders: orders.filter((o) => o.statut === 'EN_ATTENTE' || o.status === 'PENDING').length,
         revenue,
       });
     } catch (err) {

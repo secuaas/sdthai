@@ -168,14 +168,16 @@ export default function CommandesAdminPage() {
                       <div className="flex items-center gap-2">
                         {orderNum}
                         {isUrgent && (
-                          <AlertCircle className="h-4 w-4 text-orange-500" title="Commande urgente" />
+                          <span title="Commande urgente">
+                            <AlertCircle className="h-4 w-4 text-orange-500" />
+                          </span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>{partnerName}</TableCell>
                     <TableCell>
                       <div>
-                        {formatDate(deliveryDate)}
+                        {deliveryDate ? formatDate(deliveryDate) : 'N/A'}
                         {deliveryType === 'ON_SITE' && order.onSiteDeliveryTime && (
                           <div className="text-xs text-muted-foreground">
                             {new Date(order.onSiteDeliveryTime).toLocaleTimeString('fr-FR', {

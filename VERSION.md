@@ -1,11 +1,37 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.5.1** - 2026-02-05
+**0.5.2** - 2026-02-05
 
 ---
 
 ## Versions
+
+### 0.5.2 - 2026-02-05
+**Commits:** `1e58dc6`, `28b4aea`, `e352220`
+**Type:** Patch - Déploiement K8s avec SecuOps
+
+**Changements:**
+- Configuration SecuOps complète pour déploiement k8s-dev
+- Dockerfile mis à jour pour servir API + Frontend (dual-service)
+- Script start.sh pour lancer NestJS (port 3000) et Next.js (port 3001)
+- Path-based routing: /api/* -> API, /* -> Frontend
+- Secrets synchronisés avec OVH Secret Manager (21 clés)
+- ApplicationSpec créé: `/home/ubuntu/projects/secuops/configs/apps/sdthai.yaml`
+
+**Tests effectués:**
+- API health: https://sdthai.secuaas.dev/api/health
+- Frontend accessible: https://sdthai.secuaas.dev/
+- Pods running: 1/1
+- Services: sdthai-api, sdthai-frontend
+
+**Déploiement:**
+```bash
+secuops build -a sdthai -e k8s-dev
+secuops deploy -a sdthai -e k8s-dev
+```
+
+---
 
 ### 0.5.1 - 2026-02-05
 **Commits:** `7ae96e1`

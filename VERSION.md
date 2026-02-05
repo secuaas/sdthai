@@ -1,11 +1,47 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.3.1** - 2026-02-05
+**0.4.0** - 2026-02-05
 
 ---
 
 ## Versions
+
+### 0.4.0 - 2026-02-05
+**Commit:** `4bc9a6d`
+**Type:** Minor - Gestion du stock DEMO/STAFF
+
+**Changements:**
+- ✅ Nouveau module StockModule complet
+- ✅ Gestion des entrées de stock par usage (SALE/DEMO/STAFF)
+- ✅ Attribution de produits DEMO/STAFF à des utilisateurs
+- ✅ Résumé du stock par produit et usage
+- ✅ 7 nouveaux endpoints pour la gestion du stock
+
+**API Endpoints ajoutés:**
+- POST /api/stock - Créer entrée de stock
+- GET /api/stock - Lister toutes les entrées
+- GET /api/stock/summary - Résumé par produit
+- GET /api/stock/product/:id - Stock par produit
+- GET /api/stock/assigned/:userId - Stock attribué à un utilisateur
+- GET /api/stock/:id - Détail d'une entrée
+- DELETE /api/stock/:id - Supprimer une entrée
+
+**Fonctionnalités:**
+- Validation de l'existence du produit
+- Validation de l'utilisateur assigné pour DEMO/STAFF
+- Filtrage par usage (purpose)
+- Agrégation par produit et usage dans le résumé
+
+**Tests effectués:**
+- ✅ Déploiement réussi
+- ✅ API accessible
+- ✅ Module chargé au démarrage
+
+**Commits inclus:**
+- `4bc9a6d` - feat: Add Stock Management module for DEMO/STAFF products
+
+---
 
 ### 0.3.1 - 2026-02-05
 **Commit:** `9856154`

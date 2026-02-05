@@ -101,8 +101,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init curl
+# Install dumb-init for proper signal handling and openssl for Prisma
+RUN apk add --no-cache dumb-init curl openssl
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \

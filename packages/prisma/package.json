@@ -13,9 +13,11 @@
     "@prisma/client": "^5.10.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "@types/bcrypt": "^5.0.2",
+    "bcrypt": "^5.1.1",
     "prisma": "^5.10.0",
-    "tsx": "^4.7.1",
-    "@faker-js/faker": "^8.4.1"
+    "tsx": "^4.7.1"
   },
   "main": "./index.js",
   "types": "./index.d.ts"

@@ -1,0 +1,33 @@
+---
+# Job pour seed initial de la base de données
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prisma-seed
+  namespace: sdthai
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: registry-secret
+      containers:
+      - name: seed
+        image: qq9o8vqe.c1.bhs5.container-registry.ovh.net/secuops/sdthai:latest
+        command:
+          - sh
+          - -c
+          - |
+            cd /app/packages/prisma
+            npx tsx seed.ts
+        envFrom:
+        - secretRef:
+            name: sdthai-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

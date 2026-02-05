@@ -1,14 +1,43 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.5.0** - 2026-02-05
+**0.5.1** - 2026-02-05
 
 ---
 
 ## Versions
 
+### 0.5.1 - 2026-02-05
+**Commits:** `7ae96e1`
+**Type:** Patch - Documentation Swagger complète (100%)
+
+**Changements:**
+- ✅ Documentation Swagger complète pour POSController (transactions, stats)
+- ✅ Documentation Swagger complète pour ReturnsController (CRUD + photos)
+- ✅ Documentation Swagger complète pour PartnerSessionsController
+- ✅ Tous les endpoints documentés avec @ApiOperation, @ApiResponse, @ApiParam
+- ✅ Coverage Swagger: 9/9 modules (100%)
+
+**Tests effectués:**
+- ✅ Build backend API validé (dist/ généré)
+- ✅ Build frontend Next.js réussi
+- ✅ Build mobile TypeScript validé
+
+**Modules Swagger Complets (9/9):**
+- ✅ Auth (login, refresh, logout, me)
+- ✅ Users (CRUD Super Admin)
+- ✅ Partners (CRUD + endpoint public)
+- ✅ Products (CRUD + barcode search)
+- ✅ Orders (CRUD + ON_SITE delivery + approvals)
+- ✅ PartnerSessions (validate, generate codes)
+- ✅ POS (transactions, stats)
+- ✅ Returns (CRUD + photos)
+- ✅ Health (status check)
+
+---
+
 ### 0.5.0 - 2026-02-05
-**Commits:** (à committer)
+**Commits:** `e1552dc`, `c137a9e`, `37996b6`
 **Type:** Minor - Phase 3 & 4 complètes (Frontend + Mobile)
 
 **Changements Phase 3 - Frontend Next.js:**

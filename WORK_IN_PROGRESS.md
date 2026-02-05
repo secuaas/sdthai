@@ -1,10 +1,10 @@
 # Travaux en Cours - SD Thai Food
 
 ## Dernière mise à jour
-2026-02-05 17:17 UTC
+2026-02-05 17:28 UTC
 
 ## Version Actuelle
-0.1.1
+0.2.0
 
 ## Statut
 ✅ **Infrastructure complète et opérationnelle**

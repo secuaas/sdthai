@@ -114,6 +114,9 @@ COPY --from=deps --chown=sdthai:nodejs /app/packages ./packages
 COPY --from=deps --chown=sdthai:nodejs /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=deps --chown=sdthai:nodejs /app/apps/web/node_modules ./apps/web/node_modules
 
+# Copy generated Prisma client from backend-builder stage
+COPY --from=backend-builder --chown=sdthai:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+
 # Copy built backend
 COPY --from=backend-builder --chown=sdthai:nodejs /app/apps/api/dist ./apps/api/dist
 COPY --from=backend-builder --chown=sdthai:nodejs /app/apps/api/package.json ./apps/api/

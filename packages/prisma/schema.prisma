@@ -24,8 +24,8 @@ enum UserRole {
 }
 
 enum PartnerType {
-  WITH_DELIVERY      // Partenaires avec livraison (paiement comptant)
-  DEPOT_AUTOMATE     // Dépôts-vente et automates
+  WITH_DELIVERY // Partenaires avec livraison (paiement comptant)
+  DEPOT_AUTOMATE // Dépôts-vente et automates
 }
 
 enum OrderStatus {
@@ -36,20 +36,56 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum PaymentMethod {
+  CASH
+  CARD
+  MOBILE
+}
+
+enum ReturnReason {
+  DAMAGED
+  WRONG_PRODUCT
+  EXCESS
+  OTHER
+}
+
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DeliveryType {
+  STANDARD
+  ON_SITE
+}
+
+enum DeadlineType {
+  STANDARD
+  LATE
+  DEROGATION
+}
+
+enum StockPurpose {
+  SALE
+  DEMO
+  STAFF
+}
+
 // ============================================
 // CORE MODELS
 // ============================================
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  passwordHash  String
-  firstName     String
-  lastName      String
-  role          UserRole
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         UserRole
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   refreshTokens RefreshToken[]
   orders        Order[]
@@ -72,20 +108,24 @@ model RefreshToken {
 }
 
 model Partner {
-  id                String      @id @default(uuid())
-  name              String
-  type              PartnerType
-  email             String      @unique
-  phone             String
-  address           String
-  paymentMethod     String      @default("CASH_TO_DRIVER")
-  fixedDeliveryDays Json        // [1, 4] = Lundi, Jeudi
-  canOrderViaAdmin  Boolean     @default(false)
-  isActive          Boolean     @default(true)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  id                 String      @id @default(uuid())
+  name               String
+  type               PartnerType
+  email              String      @unique
+  phone              String
+  address            String
+  paymentMethod      String      @default("CASH_TO_DRIVER")
+  fixedDeliveryDays  Json // [1, 4] = Lundi, Jeudi
+  canOrderViaAdmin   Boolean     @default(false)
+  stockSyncEnabled   Boolean     @default(false)
+  stockSyncFrequency String? // "TWICE_DAILY"
+  isActive           Boolean     @default(true)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
-  orders Order[]
+  orders          Order[]
+  partnerSessions PartnerSession[]
+  posTransactions POSTransaction[]
 
   @@map("partners")
 }
@@ -101,7 +141,10 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  orderItems OrderItem[]
+  orderItems   OrderItem[]
+  posItems     POSItem[]
+  returnItems  ReturnItem[]
+  stockEntries StockEntry[]
 
   @@index([sku])
   @@index([barcode])
@@ -109,23 +152,30 @@ model Product {
 }
 
 model Order {
-  id              String      @id @default(uuid())
-  orderNumber     String      @unique
-  partnerId       String
-  partner         Partner     @relation(fields: [partnerId], references: [id])
-  userId          String
-  user            User        @relation(fields: [userId], references: [id])
-  status          OrderStatus @default(PENDING)
-  requestedDate   DateTime
-  isUrgent        Boolean     @default(false)
-  urgentReason    String?
-  urgentApproved  Boolean?
-  subtotal        Decimal     @db.Decimal(10, 2)
-  vatAmount       Decimal     @db.Decimal(10, 2)
-  total           Decimal     @db.Decimal(10, 2)
-  notes           String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                 String       @id @default(uuid())
+  orderNumber        String       @unique
+  partnerId          String
+  partner            Partner      @relation(fields: [partnerId], references: [id])
+  userId             String
+  user               User         @relation(fields: [userId], references: [id])
+  status             OrderStatus  @default(PENDING)
+  requestedDate      DateTime
+  isUrgent           Boolean      @default(false)
+  urgentReason       String?
+  urgentApproved     Boolean?
+  deadlineType       DeadlineType @default(STANDARD)
+  requiresApproval   Boolean      @default(false)
+  approvedBy         String?
+  approvedAt         DateTime?
+  deliveryType       DeliveryType @default(STANDARD)
+  onSiteDeliveryTime DateTime?
+  onSiteLocation     String?
+  subtotal           Decimal      @db.Decimal(10, 2)
+  vatAmount          Decimal      @db.Decimal(10, 2)
+  total              Decimal      @db.Decimal(10, 2)
+  notes              String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   items OrderItem[]
 
@@ -148,4 +198,132 @@ model OrderItem {
   @@index([orderId])
   @@index([productId])
   @@map("order_items")
+}
+
+// ============================================
+// PARTNER SESSIONS
+// ============================================
+
+model PartnerSession {
+  id           String    @id @default(uuid())
+  sessionCode  String    @unique // Code unique 6 caractères (ex: ABC123)
+  partnerId    String
+  partner      Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  deviceType   String // "DESKTOP" | "MOBILE"
+  expiresAt    DateTime? // null = session illimitée
+  lastActivity DateTime  @default(now())
+  ipAddress    String
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([sessionCode])
+  @@index([partnerId])
+  @@map("partner_sessions")
+}
+
+// ============================================
+// POS SYSTEM
+// ============================================
+
+model POSTransaction {
+  id            String        @id @default(uuid())
+  partnerId     String
+  partner       Partner       @relation(fields: [partnerId], references: [id])
+  paymentMethod PaymentMethod
+  subtotal      Decimal       @db.Decimal(10, 2)
+  vatAmount     Decimal       @db.Decimal(10, 2)
+  total         Decimal       @db.Decimal(10, 2)
+  createdBy     String // User ID (admin)
+  timestamp     DateTime      @default(now())
+  notes         String?
+
+  items POSItem[]
+
+  @@index([partnerId])
+  @@index([timestamp])
+  @@map("pos_transactions")
+}
+
+model POSItem {
+  id            String         @id @default(uuid())
+  transactionId String
+  transaction   POSTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product        @relation(fields: [productId], references: [id])
+  quantity      Int
+  unitPrice     Decimal        @db.Decimal(10, 2)
+  subtotal      Decimal        @db.Decimal(10, 2)
+
+  @@index([transactionId])
+  @@index([productId])
+  @@map("pos_items")
+}
+
+// ============================================
+// RETURNS MANAGEMENT
+// ============================================
+
+model Return {
+  id        String       @id @default(uuid())
+  orderId   String? // Optional: peut être lié à une commande
+  partnerId String // Partenaire concerné
+  reason    ReturnReason
+  status    ReturnStatus @default(PENDING)
+  notes     String?
+  createdBy String // User ID (driver or admin)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  items  ReturnItem[]
+  photos ReturnPhoto[]
+
+  @@index([orderId])
+  @@index([partnerId])
+  @@index([status])
+  @@map("returns")
+}
+
+model ReturnItem {
+  id        String  @id @default(uuid())
+  returnId  String
+  return    Return  @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+
+  @@index([returnId])
+  @@index([productId])
+  @@map("return_items")
+}
+
+model ReturnPhoto {
+  id        String   @id @default(uuid())
+  returnId  String
+  return    Return   @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  url       String // S3 URL
+  createdAt DateTime @default(now())
+
+  @@index([returnId])
+  @@map("return_photos")
+}
+
+// ============================================
+// STOCK MANAGEMENT
+// ============================================
+
+model StockEntry {
+  id         String       @id @default(uuid())
+  productId  String
+  product    Product      @relation(fields: [productId], references: [id])
+  quantity   Int
+  purpose    StockPurpose @default(SALE)
+  assignedTo String? // User ID pour DEMO/STAFF
+  notes      String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([productId])
+  @@index([purpose])
+  @@map("stock_entries")
 }

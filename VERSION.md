@@ -1,14 +1,52 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.4.1** - 2026-02-05
+**0.4.2** - 2026-02-05
 
 ---
 
 ## Versions
 
+### 0.4.2 - 2026-02-05
+**Commits:** `2d595d9`, `3945f13`
+**Type:** Patch - Documentation Swagger/OpenAPI complète
+
+**Changements:**
+- ✅ Installation @nestjs/swagger package
+- ✅ Configuration SwaggerModule dans main.ts
+- ✅ Documentation interactive disponible à /api/docs
+- ✅ Spécification OpenAPI 3.0 à /api/docs-json
+- ✅ Décorateurs API sur contrôleurs Auth et Orders
+- ✅ Décorateurs ApiProperty sur DTOs
+- ✅ Documentation complète du type ON_SITE delivery
+- ✅ Guide d'utilisation SWAGGER.md créé
+
+**Fonctionnalités:**
+- Interface Swagger UI interactive
+- Test des endpoints depuis le navigateur
+- Authentification JWT intégrée (bouton "Authorize")
+- Exemples de requêtes/réponses pour tous les endpoints
+- Organisation par tags (auth, orders, pos, returns, stock, etc.)
+- Export de la spécification OpenAPI pour Postman/Insomnia
+
+**Documentation:**
+- URL principale: https://sdthai.secuaas.dev/api/docs
+- Spécification JSON: https://sdthai.secuaas.dev/api/docs-json
+- Guide complet: SWAGGER.md
+
+**Tests effectués:**
+- ✅ Build API réussi avec Swagger
+- ✅ Compilation sans erreurs TypeScript
+- ⚠️  Documentation accessible une fois l'API déployée (502 en cours de résolution)
+
+**Commits inclus:**
+- `2d595d9` - fix: Force service update with annotation for targetPort change
+- `3945f13` - feat: Add Swagger/OpenAPI documentation for all endpoints
+
+---
+
 ### 0.4.1 - 2026-02-05
-**Commits:** `7e2e7c5`, `1f3aedd`
+**Commits:** `7e2e7c5`, `1f3aedd`, `179d477`
 **Type:** Patch - Livraison sur place + Fix configuration K8s
 
 **Changements:**

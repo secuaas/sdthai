@@ -1,13 +1,13 @@
 # Travaux en Cours - SD Thai Food
 
 ## Dernière mise à jour
-2026-02-05 19:00 UTC
+2026-02-05 19:30 UTC
 
 ## Version Actuelle
-0.4.1
+0.4.2
 
 ## Statut
-✅ **Phase 1 & 2 complètes - Livraison sur place ajoutée + Fix port K8s**
+✅ **Phase 1 & 2 complètes + Documentation Swagger/OpenAPI**
 
 ## Session 2026-02-05
 
@@ -130,12 +130,12 @@ Ajouter PostgreSQL au projet et déployer sur k8s-dev avec API fonctionnelle.
 
 #### Améliorations Techniques
 1. ~~Configuration port K8s permanente~~ ✅ Fait (v0.4.1 - deploy-k8s.yaml mis à jour)
-2. Copier seed.ts dans Docker pour job fonctionnel
-3. Nettoyer jobs seed échoués dans k8s
-4. Ajouter validation email unique pour Partners
-5. Implémenter validation complète deadline (20h J-2)
-6. Ajouter tests unitaires
-7. Ajouter Swagger/OpenAPI documentation
+2. ~~Ajouter Swagger/OpenAPI documentation~~ ✅ Fait (v0.4.2 - /api/docs disponible)
+3. Copier seed.ts dans Docker pour job fonctionnel
+4. Nettoyer jobs seed échoués dans k8s
+5. Ajouter validation email unique pour Partners
+6. Implémenter validation complète deadline (20h J-2)
+7. Ajouter tests unitaires et E2E
 8. **Ingress 502**: Nécessite suppression service + redéploiement pour appliquer nouveau targetPort
 
 ## Configuration Technique
@@ -246,6 +246,7 @@ Implémenter option de livraison sur place + Fix permanent configuration port K8
 ### Commits Effectués
 1. `7e2e7c5` - feat: Add on-site delivery support to Orders module
 2. `1f3aedd` - fix: Correct port configuration in Kubernetes deployment manifest
+3. `179d477` - docs: Release version 0.4.1
 
 ### Problèmes Rencontrés
 - ⚠️ Ingress 502 persiste après déploiement
@@ -255,6 +256,63 @@ Implémenter option de livraison sur place + Fix permanent configuration port K8
   kubectl delete service sdthai -n sdthai
   secuops deploy -a sdthai -e k8s-dev
   ```
+
+---
+
+## Session 2026-02-05 PM - Version 0.4.2
+
+### Objectif
+Ajouter documentation Swagger/OpenAPI interactive pour l'API
+
+### Réalisations
+
+#### 1. Installation et Configuration Swagger
+- ✅ Package @nestjs/swagger installé (v11.2.6)
+- ✅ Configuration SwaggerModule dans main.ts
+- ✅ Interface accessible à /api/docs
+- ✅ Spécification JSON à /api/docs-json
+
+#### 2. Documentation des Endpoints
+- ✅ Décorateurs @ApiTags sur contrôleurs
+- ✅ Décorateurs @ApiOperation avec descriptions
+- ✅ Décorateurs @ApiResponse pour tous les statuts
+- ✅ @ApiBearerAuth pour endpoints protégés
+- ✅ Contrôleurs documentés: Auth, Orders
+- ✅ DTOs documentés: LoginDto, CreateOrderDto (incluant ON_SITE)
+
+#### 3. Fonctionnalités Swagger UI
+- Interface interactive "Try it out"
+- Authentification JWT intégrée (bouton "Authorize")
+- Organisation par tags (auth, users, partners, orders, pos, returns, stock, health)
+- Exemples de requêtes/réponses
+- Filtrage et recherche d'endpoints
+- Persistance de l'authentification
+- Personnalisation CSS
+
+#### 4. Documentation Utilisateur
+- ✅ Fichier SWAGGER.md créé
+- ✅ Guide d'authentification step-by-step
+- ✅ Exemples de commandes standard et ON_SITE
+- ✅ Documentation des règles de deadline
+- ✅ Instructions d'export vers Postman/Insomnia
+
+### Fichiers Modifiés
+- `apps/api/src/main.ts` - Configuration SwaggerModule
+- `apps/api/src/modules/auth/auth.controller.ts` - Décorateurs API
+- `apps/api/src/modules/auth/dto/login.dto.ts` - ApiProperty
+- `apps/api/src/modules/orders/orders.controller.ts` - Décorateurs API complets
+- `apps/api/src/modules/orders/dto/create-order.dto.ts` - ApiProperty avec ON_SITE
+- `apps/api/package.json` - Ajout @nestjs/swagger
+- `SWAGGER.md` - Guide utilisateur complet
+
+### Commits Effectués
+1. `2d595d9` - fix: Force service update with annotation for targetPort change
+2. `3945f13` - feat: Add Swagger/OpenAPI documentation for all endpoints
+
+### Tests Effectués
+- ✅ Build API réussi avec Swagger
+- ✅ Compilation sans erreurs TypeScript
+- ⚠️  Interface Swagger accessible une fois API déployée (502 en attente)
 
 ## Notes Techniques
 - Prisma 5.x gère automatiquement les Decimal, pas besoin de toString()

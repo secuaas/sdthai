@@ -8,11 +8,6 @@ import { PartnersModule } from './modules/partners/partners.module';
 import { ProductsModule } from './modules/products/products.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
-import { CategoriesModule } from './modules/categories/categories.module';
-import { ProductionModule } from './modules/production/production.module';
-import { StockModule } from './modules/stock/stock.module';
-import { DeliveriesModule } from './modules/deliveries/deliveries.module';
-import { StorageModule } from './modules/storage/storage.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -23,13 +18,8 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     AuthModule,
     UsersModule,
     PartnersModule,
-    CategoriesModule,
     ProductsModule,
     OrdersModule,
-    ProductionModule,
-    StockModule,
-    DeliveriesModule,
-    StorageModule,
     HealthModule,
   ],
   providers: [

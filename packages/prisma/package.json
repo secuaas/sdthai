@@ -17,6 +17,12 @@
     "tsx": "^4.7.1",
     "@faker-js/faker": "^8.4.1"
   },
-  "main": "../../node_modules/.prisma/client/index.js",
-  "types": "../../node_modules/.prisma/client/index.d.ts"
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "../../node_modules/.prisma/client/index.d.ts",
+      "default": "../../node_modules/.prisma/client/index.js"
+    }
+  }
 }

@@ -10,6 +10,8 @@ import {
   Users,
   Settings,
   FileText,
+  CreditCard,
+  KeyRound,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,6 +26,8 @@ export function Sidebar({ role }: SidebarProps) {
     { href: '/admin/partenaires', label: 'Partenaires', icon: Users },
     { href: '/admin/produits', label: 'Produits', icon: Package },
     { href: '/admin/commandes', label: 'Commandes', icon: ShoppingCart },
+    { href: '/admin/pos', label: 'Point de Vente', icon: CreditCard },
+    { href: '/admin/sessions', label: 'Codes Session', icon: KeyRound },
   ];
 
   const partnerLinks = [

@@ -157,14 +157,18 @@ export interface Partner {
 
 export interface Product {
   id: string;
-  nom: string;
+  name: string;
   description: string;
-  prixUnitaire: number;
-  unite: string;
-  categorie: string;
-  disponible: boolean;
+  sku: string;
+  barcode?: string;
+  unitPrice: number;
+  vatRate: number;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  // French aliases for backward compatibility
+  nom?: string;
+  prixUnitaire?: number;
 }
 
 export interface OrderItem {
@@ -175,16 +179,31 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  numero: string;
-  partenaireId: string;
-  partenaire?: Partner;
+  orderNumber: string;
+  partnerId: string;
+  partner?: Partner;
   items: OrderItem[];
-  montantTotal: number;
-  statut: 'EN_ATTENTE' | 'CONFIRMEE' | 'PREPAREE' | 'LIVREE' | 'ANNULEE';
-  dateLivraison: string;
-  commentaire?: string;
+  total: number;
+  status: 'PENDING' | 'CONFIRMED' | 'PREPARED' | 'DELIVERED' | 'CANCELLED';
+  requestedDate: string;
+  isUrgent: boolean;
+  urgentReason?: string;
+  urgentApproved?: boolean;
+  deadlineType: 'STANDARD' | 'LATE' | 'DEROGATION';
+  requiresApproval: boolean;
+  deliveryType: 'STANDARD' | 'ON_SITE';
+  onSiteDeliveryTime?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
+  // French aliases for backward compatibility
+  numero?: string;
+  partenaireId?: string;
+  partenaire?: Partner;
+  montantTotal?: number;
+  statut?: 'EN_ATTENTE' | 'CONFIRMEE' | 'PREPAREE' | 'LIVREE' | 'ANNULEE';
+  dateLivraison?: string;
+  commentaire?: string;
 }
 
 // API Routes
@@ -195,24 +214,27 @@ export const authApi = {
 };
 
 export const productsApi = {
-  list: (params?: { page?: number; limit?: number; categorie?: string }) =>
-    apiClient.get<PaginatedResponse<Product>>('/produits', { params }),
-  get: (id: string) => apiClient.get<Product>(`/produits/${id}`),
-  create: (data: Partial<Product>) => apiClient.post<Product>('/produits', data),
-  update: (id: string, data: Partial<Product>) => apiClient.patch<Product>(`/produits/${id}`, data),
-  delete: (id: string) => apiClient.delete(`/produits/${id}`),
+  list: (params?: { page?: number; limit?: number }) =>
+    apiClient.get<PaginatedResponse<Product>>('/products', { params }),
+  get: (id: string) => apiClient.get<Product>(`/products/${id}`),
+  getByBarcode: (barcode: string) => apiClient.get<Product>(`/products/barcode/${barcode}`),
+  create: (data: Partial<Product>) => apiClient.post<Product>('/products', data),
+  update: (id: string, data: Partial<Product>) => apiClient.patch<Product>(`/products/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/products/${id}`),
 };
 
 export const ordersApi = {
-  list: (params?: { page?: number; limit?: number; statut?: string; partenaireId?: string }) =>
-    apiClient.get<PaginatedResponse<Order>>('/commandes', { params }),
-  get: (id: string) => apiClient.get<Order>(`/commandes/${id}`),
-  create: (data: { items: OrderItem[]; dateLivraison: string; commentaire?: string }) =>
-    apiClient.post<Order>('/commandes', data),
-  update: (id: string, data: Partial<Order>) => apiClient.patch<Order>(`/commandes/${id}`, data),
-  delete: (id: string) => apiClient.delete(`/commandes/${id}`),
-  updateStatus: (id: string, statut: Order['statut']) =>
-    apiClient.patch<Order>(`/commandes/${id}/statut`, { statut }),
+  list: (params?: { page?: number; limit?: number; status?: string; partnerId?: string; requiresApproval?: boolean }) =>
+    apiClient.get<PaginatedResponse<Order>>('/orders', { params }),
+  get: (id: string) => apiClient.get<Order>(`/orders/${id}`),
+  create: (data: { partnerId: string; items: { productId: string; quantity: number }[]; requestedDate: string; isUrgent?: boolean; urgentReason?: string; deliveryType?: 'STANDARD' | 'ON_SITE'; onSiteDeliveryTime?: string; notes?: string }) =>
+    apiClient.post<Order>('/orders', data),
+  update: (id: string, data: Partial<Order>) => apiClient.patch<Order>(`/orders/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/orders/${id}`),
+  updateStatus: (id: string, status: Order['status']) =>
+    apiClient.patch<Order>(`/orders/${id}/status`, { status }),
+  approve: (id: string) => apiClient.post<Order>(`/orders/${id}/approve`, {}),
+  reject: (id: string, reason?: string) => apiClient.post<Order>(`/orders/${id}/reject`, { reason }),
 };
 
 export const partnersApi = {
@@ -222,4 +244,53 @@ export const partnersApi = {
   create: (data: Partial<Partner>) => apiClient.post<Partner>('/partenaires', data),
   update: (id: string, data: Partial<Partner>) => apiClient.patch<Partner>(`/partenaires/${id}`, data),
   delete: (id: string) => apiClient.delete(`/partenaires/${id}`),
+};
+
+export interface POSTransaction {
+  id: string;
+  partnerId: string;
+  partnerName?: string;
+  totalAmount: number;
+  paymentMethod: 'CASH' | 'CARD' | 'TRANSFER';
+  items: POSTransactionItem[];
+  createdAt: string;
+}
+
+export interface POSTransactionItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface CreatePOSTransactionDto {
+  partnerId: string;
+  items: { productId: string; quantity: number }[];
+  paymentMethod: 'CASH' | 'CARD' | 'TRANSFER';
+}
+
+export const posApi = {
+  create: (data: CreatePOSTransactionDto) =>
+    apiClient.post<POSTransaction>('/pos/transactions', data),
+  list: (params?: { partnerId?: string; page?: number; limit?: number }) =>
+    apiClient.get<PaginatedResponse<POSTransaction>>('/pos/transactions', { params }),
+  get: (id: string) => apiClient.get<POSTransaction>(`/pos/transactions/${id}`),
+};
+
+export interface PartnerSession {
+  id: string;
+  partnerId: string;
+  partnerName?: string;
+  code: string;
+  expiresAt: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export const partnerSessionsApi = {
+  validate: (code: string) => apiClient.post<PartnerSession>('/partner-sessions/validate', { code }),
+  getActive: (partnerId: string) => apiClient.get<PartnerSession>(`/partner-sessions/active/${partnerId}`),
+  create: (partnerId: string) => apiClient.post<PartnerSession>('/partner-sessions', { partnerId }),
+  deactivate: (id: string) => apiClient.patch<PartnerSession>(`/partner-sessions/${id}/deactivate`, {}),
 };

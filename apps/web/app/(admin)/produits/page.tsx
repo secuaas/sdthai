@@ -33,6 +33,16 @@ export default function ProduitsAdminPage() {
     }
   };
 
+  const toggleProductStatus = async (productId: string, currentStatus: boolean) => {
+    try {
+      await productsApi.update(productId, { isActive: !currentStatus });
+      await loadProducts();
+    } catch (err) {
+      console.error('Failed to toggle product status:', err);
+      alert('Erreur lors de la mise à jour du statut du produit');
+    }
+  };
+
   if (loading) {
     return <div>Chargement des produits...</div>;
   }
@@ -50,33 +60,40 @@ export default function ProduitsAdminPage() {
             <TableRow>
               <TableHead>Nom</TableHead>
               <TableHead>Description</TableHead>
-              <TableHead>Catégorie</TableHead>
+              <TableHead>SKU</TableHead>
+              <TableHead>Code-barres</TableHead>
               <TableHead>Prix Unitaire</TableHead>
-              <TableHead>Unité</TableHead>
-              <TableHead>Disponibilité</TableHead>
+              <TableHead>Statut</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
                   Aucun produit
                 </TableCell>
               </TableRow>
             ) : (
               products.map((product) => (
                 <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.nom}</TableCell>
+                  <TableCell className="font-medium">{product.name || product.nom}</TableCell>
                   <TableCell className="max-w-xs truncate">{product.description}</TableCell>
+                  <TableCell className="font-mono text-sm">{product.sku}</TableCell>
+                  <TableCell className="font-mono text-sm">{product.barcode || '-'}</TableCell>
+                  <TableCell>{formatCurrency(product.unitPrice || product.prixUnitaire || 0)}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{product.categorie}</Badge>
-                  </TableCell>
-                  <TableCell>{formatCurrency(product.prixUnitaire)}</TableCell>
-                  <TableCell>{product.unite}</TableCell>
-                  <TableCell>
-                    <Badge variant={product.disponible ? 'success' : 'destructive'}>
-                      {product.disponible ? 'Disponible' : 'Indisponible'}
+                    <Badge variant={product.isActive ? 'default' : 'secondary'}>
+                      {product.isActive ? 'Actif' : 'Inactif'}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <button
+                      onClick={() => toggleProductStatus(product.id, product.isActive)}
+                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      {product.isActive ? 'Désactiver' : 'Activer'}
+                    </button>
                   </TableCell>
                 </TableRow>
               ))

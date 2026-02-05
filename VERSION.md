@@ -1,11 +1,65 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.4.3** - 2026-02-05
+**0.5.0** - 2026-02-05
 
 ---
 
 ## Versions
+
+### 0.5.0 - 2026-02-05
+**Commits:** (à committer)
+**Type:** Minor - Phase 3 & 4 complètes (Frontend + Mobile)
+
+**Changements Phase 3 - Frontend Next.js:**
+- ✅ Suppression des références catégories (champ supprimé du backend)
+- ✅ Ajout toggle activation produits (isActive) dans interface admin
+- ✅ Interface POS complète avec scanner barcode et panier
+- ✅ Page validation codes session partenaire
+- ✅ Interface approbation commandes (LATE/DEROGATION deadlines)
+- ✅ Support ON_SITE delivery avec heure planifiée
+- ✅ Mise à jour API client avec nouveaux endpoints
+- ✅ Ajout liens navigation sidebar (POS, Sessions)
+
+**Changements Phase 4 - Mobile React Native:**
+- ✅ Initialisation app Expo avec TypeScript
+- ✅ Installation dépendances (React Navigation, Camera, Image Picker)
+- ✅ Module Returns complet avec 2 écrans
+- ✅ Prise de photos via caméra ou galerie (max 5 photos)
+- ✅ Upload photos pour retours produits
+- ✅ Liste retours avec statuts et filtres
+- ✅ API client mobile avec authentification JWT
+- ✅ README mobile avec instructions développement
+
+**Fichiers Créés - Frontend:**
+- `apps/web/app/(admin)/pos/page.tsx` - Point de vente
+- `apps/web/app/(admin)/sessions/page.tsx` - Gestion codes session
+- Mise à jour `apps/web/lib/api-client.ts` (POS, Sessions APIs)
+- Mise à jour `apps/web/app/(admin)/produits/page.tsx` (toggle isActive)
+- Mise à jour `apps/web/app/(admin)/commandes/page.tsx` (approbations)
+- Mise à jour `components/layout/sidebar.tsx` (nouveaux liens)
+
+**Fichiers Créés - Mobile:**
+- `apps/mobile/src/api/client.ts` - Client HTTP avec auth JWT
+- `apps/mobile/src/api/returns.ts` - API retours
+- `apps/mobile/src/types/index.ts` - Types TypeScript
+- `apps/mobile/src/screens/CreateReturnScreen.tsx` - Création retours
+- `apps/mobile/src/screens/ReturnsListScreen.tsx` - Liste retours
+- `apps/mobile/App.tsx` - Navigation principale
+- `apps/mobile/README.md` - Documentation
+
+**Tests effectués:**
+- ⏳ Build frontend (à tester)
+- ⏳ Build mobile (à tester)
+- ⏳ Tests E2E interfaces
+
+**Progression Architecture:**
+- ✅ Phase 1: Base de données (100%)
+- ✅ Phase 2: Backend Modules (100%)
+- ✅ Phase 3: Frontend (100%)
+- ✅ Phase 4: Mobile App (100% - Returns module)
+
+---
 
 ### 0.4.3 - 2026-02-05
 **Commits:** `bc05764`

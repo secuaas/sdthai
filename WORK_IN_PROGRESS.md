@@ -1,13 +1,13 @@
 # Travaux en Cours - SD Thai Food
 
 ## Dernière mise à jour
-2026-02-05 17:28 UTC
+2026-02-05 17:50 UTC
 
 ## Version Actuelle
-0.2.0
+0.3.0
 
 ## Statut
-✅ **Infrastructure complète et opérationnelle**
+✅ **Architecture Updates Phase 1 complète**
 
 ## Session 2026-02-05
 
@@ -70,20 +70,46 @@ Ajouter PostgreSQL au projet et déployer sur k8s-dev avec API fonctionnelle.
 - Health check opérationnel
 - URL: https://sdthai.secuaas.dev
 
+### Nouvelles Fonctionnalités (Session actuelle)
+
+#### 1. PartnerSessionsModule ✅
+- Génération codes uniques (6 caractères)
+- Validation et activation par admin
+- Sessions persistantes illimitées
+- API publique + endpoints admin
+
+#### 2. POSModule ✅
+- Transactions pour DEPOT_AUTOMATE
+- Calcul automatique des prix (subtotal, TVA, total)
+- Support paiements CASH/CARD/MOBILE
+- Statistiques par partenaire
+
+#### 3. ReturnsModule ✅
+- Création retours (driver/admin)
+- Raisons: DAMAGED, WRONG_PRODUCT, EXCESS, OTHER
+- Statuts: PENDING, APPROVED, REJECTED
+- Support photos (upload URL)
+
+#### 4. Deadline Validation ✅
+- STANDARD: Commande avant 20h J-2
+- LATE: Entre 20h J-2 et 05h J-1 (requiert approbation)
+- DEROGATION: Après 05h J-1 (bloqué)
+
 ### Prochaines Étapes
 
 #### Prioritaire
-1. Ajouter plus de produits et partenaires
-2. Créer utilisateurs partenaires pour tester différents rôles
-3. Tester flow complet avec utilisateur PARTNER
+1. **Résoudre problème ingress externe** (502 Bad Gateway)
+2. Tester tous les nouveaux endpoints avec données réelles
+3. Créer données de test pour POS et Returns
+4. Tester flows partner sessions end-to-end
 
-#### Fonctionnalités ARCHITECTURE_UPDATES.md
-1. Codes de session partenaires
-2. Système POS pour DEPOT_AUTOMATE
-3. Gestion des retours via mobile
-4. Produits démo/staff
-5. Deadline commande 20h pour J+2 (actuellement validation basique)
-6. Option livraison sur place
+#### Fonctionnalités Restantes ARCHITECTURE_UPDATES.md
+1. ~~Codes de session partenaires~~ ✅ Fait
+2. ~~Système POS pour DEPOT_AUTOMATE~~ ✅ Fait
+3. ~~Gestion des retours via mobile~~ ✅ Fait
+4. ~~Deadline commande 20h pour J+2~~ ✅ Fait
+5. Produits démo/staff (StockEntry model créé, à tester)
+6. Option livraison sur place (champs Order créés, à tester)
 
 #### Améliorations Techniques
 1. Copier seed.ts dans Docker pour job fonctionnel
@@ -115,18 +141,45 @@ Password: Admin123!
 Role: SUPER_ADMIN
 ```
 
-## Fichiers Modifiés (Session)
-- `deploy/k8s/postgres/postgres.yaml` (créé)
-- `deploy/k8s/postgres/migration-job.yaml` (créé)
-- `deploy/k8s/postgres/seed-job.yaml` (créé)
-- `apps/api/src/modules/products/dto/create-product.dto.ts`
-- `apps/api/src/modules/products/dto/update-product.dto.ts`
+## Session 2026-02-05 PM - Architecture Updates Phase 1
+
+### Fichiers Créés
+**Modules:**
+- `apps/api/src/modules/partner-sessions/` (module complet)
+  - partner-sessions.controller.ts
+  - partner-sessions.service.ts
+  - partner-sessions.module.ts
+  - dto/create-partner-session.dto.ts
+  - dto/validate-session-code.dto.ts
+- `apps/api/src/modules/pos/` (module complet)
+  - pos.controller.ts
+  - pos.service.ts
+  - pos.module.ts
+  - dto/create-transaction.dto.ts
+- `apps/api/src/modules/returns/` (module complet)
+  - returns.controller.ts
+  - returns.service.ts
+  - returns.module.ts
+  - dto/create-return.dto.ts
+  - dto/update-return-status.dto.ts
+
+### Fichiers Modifiés
+- `packages/prisma/schema.prisma` (221 lignes ajoutées)
+  - 6 nouveaux enums
+  - 7 nouveaux modèles
+  - Champs additionnels Partner et Order
 - `apps/api/src/modules/orders/orders.service.ts`
-- `packages/prisma/seed.ts`
-- `packages/prisma/package.json`
-- `DEPLOYMENT_STATUS.md`
-- `SESSION_2026-02-05.md` (créé)
-- `WORK_IN_PROGRESS.md` (ce fichier)
+  - Logique deadline complète implémentée
+  - validateDeliveryDeadline() retourne deadlineType et requiresApproval
+- `apps/api/src/app.module.ts`
+  - Imports PartnerSessionsModule, PosModule, ReturnsModule
+- `VERSION.md` - Version 0.3.0
+- `WORK_IN_PROGRESS.md` - Ce fichier
+
+### Commits
+1. `1bc1a9a` - feat: Add new models and fields for architecture updates
+2. `2d138a5` - feat: Add partner sessions, POS, returns modules and deadline validation
+3. `720961e` - fix: Correct import paths for auth guards and decorators
 
 ## Notes Techniques
 - Prisma 5.x gère automatiquement les Decimal, pas besoin de toString()

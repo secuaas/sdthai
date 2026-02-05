@@ -1,11 +1,62 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.2.0** - 2026-02-05
+**0.3.0** - 2026-02-05
 
 ---
 
 ## Versions
+
+### 0.3.0 - 2026-02-05
+**Commit:** `720961e`
+**Type:** Minor - Architecture Updates Phase 1
+
+**Changements:**
+- ✅ Nouveaux modules fonctionnels:
+  - PartnerSessionsModule: Authentification persistante avec codes uniques
+  - POSModule: Transactions point de vente pour DEPOT_AUTOMATE
+  - ReturnsModule: Gestion des retours avec photos
+- ✅ Schéma Prisma étendu:
+  - 6 nouveaux enums (PaymentMethod, ReturnReason, ReturnStatus, DeliveryType, DeadlineType, StockPurpose)
+  - 7 nouveaux modèles (PartnerSession, POSTransaction, POSItem, Return, ReturnItem, ReturnPhoto, StockEntry)
+  - Champs additionnels sur Order (deadlineType, requiresApproval, deliveryType, etc.)
+  - Champs additionnels sur Partner (stockSyncEnabled, stockSyncFrequency)
+- ✅ Logique deadline complète implémentée:
+  - Deadline standard: 20h00 J-2
+  - Deadline tardive: 05h00 J-1 (requiert approbation)
+  - Après 05h00: Bloqué (nécessite dérogation admin)
+- ✅ Déploiement k8s-dev réussi
+  - Migration base de données appliquée
+  - 19 nouvelles routes API actives
+  - Application opérationnelle en interne
+
+**Commits inclus:**
+- `1bc1a9a` - feat: Add new models and fields for architecture updates
+- `2d138a5` - feat: Add partner sessions, POS, returns modules and deadline validation
+- `720961e` - fix: Correct import paths for auth guards and decorators
+
+**Tests effectués:**
+- ✅ Build Docker sans erreurs
+- ✅ Migration Prisma réussie
+- ✅ 19 nouvelles routes enregistrées
+- ✅ Modules chargés au démarrage
+- ✅ Health check opérationnel (interne)
+- ⚠️  Ingress externe en cours de résolution (502)
+
+**API Endpoints ajoutés:**
+- POST /api/partner-sessions/request
+- POST /api/partner-sessions/validate
+- GET /api/partner-sessions
+- PATCH /api/partner-sessions/:id/activate
+- POST /api/pos/transactions
+- GET /api/pos/transactions
+- GET /api/pos/stats/:partnerId
+- POST /api/returns
+- GET /api/returns
+- PUT /api/returns/:id/status
+- POST /api/returns/:id/photos
+
+---
 
 ### 0.2.0 - 2026-02-05
 **Commit:** `fb495e6`

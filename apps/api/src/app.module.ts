@@ -11,6 +11,7 @@ import { HealthModule } from './modules/health/health.module';
 import { PartnerSessionsModule } from './modules/partner-sessions/partner-sessions.module';
 import { PosModule } from './modules/pos/pos.module';
 import { ReturnsModule } from './modules/returns/returns.module';
+import { StockModule } from './modules/stock/stock.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -27,6 +28,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     PartnerSessionsModule,
     PosModule,
     ReturnsModule,
+    StockModule,
   ],
   providers: [
     {

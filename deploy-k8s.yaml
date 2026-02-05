@@ -50,6 +50,9 @@ kind: Service
 metadata:
   name: sdthai
   namespace: sdthai
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"name":"sdthai","namespace":"sdthai"},"spec":{"ports":[{"port":80,"protocol":"TCP","targetPort":3000}],"selector":{"app":"sdthai"},"type":"ClusterIP"}}
 spec:
   selector:
     app: sdthai

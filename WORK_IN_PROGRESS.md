@@ -1,13 +1,13 @@
 # Travaux en Cours - SD Thai Food
 
 ## Dernière mise à jour
-2026-02-05 18:45 UTC
+2026-02-05 19:00 UTC
 
 ## Version Actuelle
-0.4.0
+0.4.1
 
 ## Statut
-✅ **Architecture Updates Phase 1 complète + Tests validés**
+✅ **Phase 1 & 2 complètes - Livraison sur place ajoutée + Fix port K8s**
 
 ## Session 2026-02-05
 
@@ -121,19 +121,22 @@ Ajouter PostgreSQL au projet et déployer sur k8s-dev avec API fonctionnelle.
 5. Documenter exemples d'utilisation des nouveaux endpoints
 
 #### Fonctionnalités Restantes ARCHITECTURE_UPDATES.md
-1. ~~Codes de session partenaires~~ ✅ Fait
-2. ~~Système POS pour DEPOT_AUTOMATE~~ ✅ Fait
-3. ~~Gestion des retours via mobile~~ ✅ Fait
-4. ~~Deadline commande 20h pour J+2~~ ✅ Fait
-5. Produits démo/staff (StockEntry model créé, à tester)
-6. Option livraison sur place (champs Order créés, à tester)
+1. ~~Codes de session partenaires~~ ✅ Fait (v0.3.0)
+2. ~~Système POS pour DEPOT_AUTOMATE~~ ✅ Fait (v0.3.0)
+3. ~~Gestion des retours via mobile~~ ✅ Fait (v0.3.0)
+4. ~~Deadline commande 20h pour J+2~~ ✅ Fait (v0.3.0)
+5. ~~Produits démo/staff~~ ✅ Fait (v0.4.0 - StockModule complet)
+6. ~~Option livraison sur place~~ ✅ Fait (v0.4.1 - deliveryType + onSiteDeliveryTime)
 
 #### Améliorations Techniques
-1. Copier seed.ts dans Docker pour job fonctionnel
-2. Nettoyer jobs seed échoués dans k8s
-3. Ajouter validation email unique pour Partners
-4. Implémenter validation complète deadline (20h J-2)
-5. Ajouter tests unitaires
+1. ~~Configuration port K8s permanente~~ ✅ Fait (v0.4.1 - deploy-k8s.yaml mis à jour)
+2. Copier seed.ts dans Docker pour job fonctionnel
+3. Nettoyer jobs seed échoués dans k8s
+4. Ajouter validation email unique pour Partners
+5. Implémenter validation complète deadline (20h J-2)
+6. Ajouter tests unitaires
+7. Ajouter Swagger/OpenAPI documentation
+8. **Ingress 502**: Nécessite suppression service + redéploiement pour appliquer nouveau targetPort
 
 ## Configuration Technique
 
@@ -206,16 +209,59 @@ Role: SUPER_ADMIN
 2. `2d138a5` - feat: Add partner sessions, POS, returns modules and deadline validation
 3. `720961e` - fix: Correct import paths for auth guards and decorators
 
+## Session 2026-02-05 PM - Version 0.4.1
+
+### Objectif
+Implémenter option de livraison sur place + Fix permanent configuration port K8s
+
+### Réalisations
+
+#### 1. Livraison sur Place (ON_SITE)
+- ✅ Ajout deliveryType enum (STANDARD, ON_SITE) au CreateOrderDto
+- ✅ Ajout champ onSiteDeliveryTime (DateTime optionnel)
+- ✅ Mise à jour OrdersService pour gérer les deux types
+- ✅ Validation et imports DeliveryType depuis Prisma
+- ✅ Rétrocompatibilité assurée (STANDARD par défaut)
+
+#### 2. Fix Configuration Kubernetes
+- ✅ Correction deploy-k8s.yaml:
+  - containerPort: 8080 → 3000
+  - env PORT: 8080 → 3000
+  - service targetPort: 8080 → 3000
+  - health probes ports: 8080 → 3000
+- ✅ Build API réussi sans erreurs TypeScript
+- ✅ Prisma client régénéré
+- ✅ Déploiement effectué
+
+#### 3. Fichiers Modifiés
+- `apps/api/src/modules/orders/dto/create-order.dto.ts`
+  - Ajout DeliveryType import
+  - Ajout deliveryType et onSiteDeliveryTime fields
+- `apps/api/src/modules/orders/orders.service.ts`
+  - Support deliveryType dans la création de commande
+  - Conversion onSiteDeliveryTime string → Date
+- `deploy-k8s.yaml`
+  - Tous les ports changés de 8080 à 3000
+
+### Commits Effectués
+1. `7e2e7c5` - feat: Add on-site delivery support to Orders module
+2. `1f3aedd` - fix: Correct port configuration in Kubernetes deployment manifest
+
+### Problèmes Rencontrés
+- ⚠️ Ingress 502 persiste après déploiement
+- **Cause**: Service K8s existant n'est pas mis à jour par secuops
+- **Solution nécessaire**: Supprimer service et redéployer:
+  ```bash
+  kubectl delete service sdthai -n sdthai
+  secuops deploy -a sdthai -e k8s-dev
+  ```
+
 ## Notes Techniques
 - Prisma 5.x gère automatiquement les Decimal, pas besoin de toString()
 - OrderItem: uniquement productId, quantity, unitPrice, subtotal
 - Order: subtotal, vatAmount (8.1%), total calculés dans le service
 - fixedDeliveryDays stocké comme JSON array [1, 4] = Lundi, Jeudi
 - Cache Docker avec tag :latest nécessite suppression manuelle des pods
-
-## Métriques Session
-- **Durée**: ~3h30
-- **Commits**: 5
-- **Builds Docker**: 4
-- **Déploiements**: 4
-- **Tests API**: 15+
+- **Port application**: Toujours 3000 (NestJS par défaut)
+- **Deploy manifest**: deploy-k8s.yaml est le fichier utilisé par secuops
+- **Service update**: Nécessite delete/recreate pour changer targetPort

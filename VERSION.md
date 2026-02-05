@@ -1,11 +1,48 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.4.0** - 2026-02-05
+**0.4.1** - 2026-02-05
 
 ---
 
 ## Versions
+
+### 0.4.1 - 2026-02-05
+**Commits:** `7e2e7c5`, `1f3aedd`
+**Type:** Patch - Livraison sur place + Fix configuration K8s
+
+**Changements:**
+- ✅ Support livraison ON_SITE dans le module Orders
+- ✅ Ajout champs deliveryType et onSiteDeliveryTime au DTO
+- ✅ Correction permanente configuration port dans deploy-k8s.yaml
+- ✅ Tous les ports changés de 8080 → 3000
+
+**Fonctionnalités:**
+- Création de commandes avec deliveryType: ON_SITE
+- Planification d'heure de livraison sur place (onSiteDeliveryTime)
+- Rétrocompatibilité avec STANDARD delivery (par défaut)
+
+**Infrastructure:**
+- Port containerPort: 3000 (au lieu de 8080)
+- Port env PORT: 3000
+- Service targetPort: 3000
+- Health probes port: 3000
+
+**Tests effectués:**
+- ✅ Build API réussi
+- ✅ Compilation sans erreurs TypeScript
+- ⚠️  Déploiement K8s effectué (ingress 502 - nécessite clearing cache/service reload)
+
+**Commits inclus:**
+- `7e2e7c5` - feat: Add on-site delivery support to Orders module
+- `1f3aedd` - fix: Correct port configuration in Kubernetes deployment manifest
+
+**Note importante:**
+Le manifest deploy-k8s.yaml est maintenant correct avec le port 3000. Si 502 persiste après déploiement, il faut:
+1. Supprimer le service existant: `kubectl delete service sdthai -n sdthai`
+2. Redéployer pour recréer avec la bonne configuration
+
+---
 
 ### 0.4.0 - 2026-02-05
 **Commit:** `4bc9a6d`

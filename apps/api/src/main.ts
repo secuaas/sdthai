@@ -29,7 +29,8 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await prismaService.enableShutdownHooks(app);
+  // Shutdown hooks removed - not needed with Prisma 5.x library engine
+  // Prisma automatically handles cleanup on process exit
 
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);

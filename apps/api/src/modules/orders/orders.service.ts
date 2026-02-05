@@ -47,20 +47,14 @@ export class OrdersService {
 
       const unitPrice = parseFloat(product.priceB2b.toString());
       const itemSubtotal = unitPrice * item.quantity;
-      const vatRate = 0.081;
-      const vatAmount = itemSubtotal * vatRate;
-      const itemTotal = itemSubtotal + vatAmount;
 
       subtotal += itemSubtotal;
 
       orderItems.push({
         productId: product.id,
         quantity: item.quantity,
-        unitPrice: unitPrice.toString(),
-        subtotal: itemSubtotal.toString(),
-        vatRate: vatRate.toString(),
-        vatAmount: vatAmount.toString(),
-        total: itemTotal.toString(),
+        unitPrice,
+        subtotal: itemSubtotal,
       });
     }
 
@@ -83,9 +77,9 @@ export class OrdersService {
         isUrgent: createOrderDto.isUrgent || false,
         urgentReason: createOrderDto.urgentReason,
         urgentApproved: createOrderDto.isUrgent ? null : undefined,
-        subtotal: subtotal.toString(),
-        vatAmount: vatAmount.toString(),
-        total: total.toString(),
+        subtotal,
+        vatAmount,
+        total,
         notes: createOrderDto.notes,
         items: {
           create: orderItems,
@@ -237,20 +231,14 @@ export class OrdersService {
 
         const unitPrice = parseFloat(product.priceB2b.toString());
         const itemSubtotal = unitPrice * item.quantity;
-        const vatRate = 0.081;
-        const vatAmount = itemSubtotal * vatRate;
-        const itemTotal = itemSubtotal + vatAmount;
 
         subtotal += itemSubtotal;
 
         orderItems.push({
           productId: product.id,
           quantity: item.quantity,
-          unitPrice: unitPrice.toString(),
-          subtotal: itemSubtotal.toString(),
-          vatRate: vatRate.toString(),
-          vatAmount: vatAmount.toString(),
-          total: itemTotal.toString(),
+          unitPrice,
+          subtotal: itemSubtotal,
         });
       }
 
@@ -261,9 +249,9 @@ export class OrdersService {
       const vatAmount = subtotal * 0.081;
       const total = subtotal + vatAmount;
 
-      updateData.subtotal = subtotal.toString();
-      updateData.vatAmount = vatAmount.toString();
-      updateData.total = total.toString();
+      updateData.subtotal = subtotal;
+      updateData.vatAmount = vatAmount;
+      updateData.total = total;
 
       updateData.items = {
         create: orderItems,
@@ -316,30 +304,24 @@ export class OrdersService {
   }
 
   private validateDeliveryDeadline(partner: any, requestedDate: Date) {
-    const deliveryDaysArray = Array.isArray(partner.deliveryDays)
-      ? partner.deliveryDays
-      : JSON.parse(partner.deliveryDays as string);
+    // MVP: Validation simplifiée basée sur fixedDeliveryDays
+    // TODO: Implémenter validation complète avec deadline 20h pour J+2
 
-    const requestedDayName = this.getDayName(requestedDate);
-
-    if (!deliveryDaysArray.includes(requestedDayName)) {
-      throw new BadRequestException(
-        `Partner delivery is only available on: ${deliveryDaysArray.join(', ')}`,
-      );
+    if (!partner.fixedDeliveryDays) {
+      return; // Pas de jours fixes définis
     }
 
-    const [deadlineHours, deadlineMinutes] = partner.orderDeadlineTime.split(':').map(Number);
-    const deadlineDays = partner.orderDeadlineDays || 1;
+    const fixedDays = Array.isArray(partner.fixedDeliveryDays)
+      ? partner.fixedDeliveryDays
+      : JSON.parse(partner.fixedDeliveryDays as string);
 
-    const deadline = new Date(requestedDate);
-    deadline.setDate(deadline.getDate() - deadlineDays);
-    deadline.setHours(deadlineHours, deadlineMinutes, 0, 0);
+    const requestedDay = requestedDate.getDay(); // 0-6, 0 = Sunday
 
-    const now = new Date();
-
-    if (now > deadline) {
+    if (!fixedDays.includes(requestedDay)) {
+      const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+      const allowedDays = fixedDays.map((d: number) => dayNames[d]).join(', ');
       throw new BadRequestException(
-        `Order deadline has passed. Orders must be placed ${deadlineDays} day(s) before delivery by ${partner.orderDeadlineTime}`,
+        `Les livraisons pour ce partenaire sont uniquement disponibles: ${allowedDays}`,
       );
     }
   }

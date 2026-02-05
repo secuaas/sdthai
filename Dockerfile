@@ -136,10 +136,14 @@ COPY --from=frontend-builder --chown=sdthai:nodejs /app/apps/web/public ./apps/w
 # Copy workspace files
 COPY --chown=sdthai:nodejs pnpm-workspace.yaml package.json ./
 
+# Copy start script
+COPY --chown=sdthai:nodejs start.sh ./
+RUN chmod +x start.sh
+
 USER sdthai
 
-# Expose port for API (Web will be served via reverse proxy)
-EXPOSE 3000
+# Expose ports: 3000 for API, 3001 for Frontend
+EXPOSE 3000 3001
 
 ENV NODE_ENV=production
 
@@ -147,5 +151,5 @@ ENV NODE_ENV=production
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
-# Start API server (NestJS)
-CMD ["dumb-init", "node", "apps/api/dist/main.js"]
+# Start both services
+CMD ["dumb-init", "./start.sh"]

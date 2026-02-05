@@ -20,7 +20,6 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.prismaService.user.findUnique({
       where: { email: loginDto.email },
-      include: { partner: true },
     });
 
     if (!user) {
@@ -40,10 +39,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    await this.prismaService.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
+    // lastLoginAt field removed in MVP schema
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
 
@@ -54,8 +50,6 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        partnerId: user.partnerId,
-        partner: user.partner,
       },
       ...tokens,
     };
@@ -123,19 +117,13 @@ export class AuthService {
   async me(userId: string) {
     const user = await this.prismaService.user.findUnique({
       where: { id: userId },
-      include: { partner: true },
       select: {
         id: true,
         email: true,
         firstName: true,
         lastName: true,
-        phone: true,
         role: true,
-        partnerId: true,
-        partner: true,
         isActive: true,
-        emailVerified: true,
-        lastLoginAt: true,
         createdAt: true,
       },
     });

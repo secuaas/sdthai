@@ -166,8 +166,6 @@ export class OrdersService {
             product: true,
           },
         },
-        delivery: true,
-        invoice: true,
       },
     });
 

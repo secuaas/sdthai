@@ -1,2 +1,2 @@
 // Re-export everything from the generated Prisma Client
-export * from '@prisma/client';
+export * from '../../node_modules/.prisma/client';

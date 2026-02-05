@@ -29,24 +29,10 @@ export class ProductsService {
       throw new ConflictException('Barcode already exists');
     }
 
-    const category = await this.prismaService.category.findUnique({
-      where: { id: createProductDto.categoryId },
-    });
-
-    if (!category) {
-      throw new BadRequestException('Category not found');
-    }
-
     const product = await this.prismaService.product.create({
       data: {
         ...createProductDto,
         priceB2b: createProductDto.priceB2b.toString(),
-        priceB2c: createProductDto.priceB2c.toString(),
-        allergens: createProductDto.allergens || [],
-      },
-      include: {
-        category: true,
-        images: true,
       },
     });
 
@@ -55,12 +41,6 @@ export class ProductsService {
 
   async findAll() {
     return this.prismaService.product.findMany({
-      include: {
-        category: true,
-        images: {
-          where: { isMain: true },
-        },
-      },
       orderBy: {
         nameFr: 'asc',
       },
@@ -70,14 +50,6 @@ export class ProductsService {
   async findOne(id: string) {
     const product = await this.prismaService.product.findUnique({
       where: { id },
-      include: {
-        category: true,
-        images: {
-          orderBy: {
-            sortOrder: 'asc',
-          },
-        },
-      },
     });
 
     if (!product) {
@@ -90,14 +62,6 @@ export class ProductsService {
   async findByBarcode(barcode: string) {
     const product = await this.prismaService.product.findUnique({
       where: { barcode },
-      include: {
-        category: true,
-        images: {
-          orderBy: {
-            sortOrder: 'asc',
-          },
-        },
-      },
     });
 
     if (!product) {
@@ -136,33 +100,15 @@ export class ProductsService {
       }
     }
 
-    if (updateProductDto.categoryId) {
-      const category = await this.prismaService.category.findUnique({
-        where: { id: updateProductDto.categoryId },
-      });
-
-      if (!category) {
-        throw new BadRequestException('Category not found');
-      }
-    }
-
     const updateData: any = { ...updateProductDto };
 
     if (updateProductDto.priceB2b !== undefined) {
       updateData.priceB2b = updateProductDto.priceB2b.toString();
     }
 
-    if (updateProductDto.priceB2c !== undefined) {
-      updateData.priceB2c = updateProductDto.priceB2c.toString();
-    }
-
     return this.prismaService.product.update({
       where: { id },
       data: updateData,
-      include: {
-        category: true,
-        images: true,
-      },
     });
   }
 

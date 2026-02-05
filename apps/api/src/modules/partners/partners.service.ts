@@ -8,14 +8,11 @@ export class PartnersService {
   constructor(private prismaService: PrismaService) {}
 
   async create(createPartnerDto: CreatePartnerDto) {
-    const { deliveryDays, ...rest } = createPartnerDto;
-
     const partner = await this.prismaService.partner.create({
       data: {
-        ...rest,
-        deliveryDays: deliveryDays || ['MONDAY', 'THURSDAY'],
-        latitude: createPartnerDto.latitude.toString(),
-        longitude: createPartnerDto.longitude.toString(),
+        ...createPartnerDto,
+        fixedDeliveryDays: createPartnerDto.fixedDeliveryDays || [1, 4], // Lundi, Jeudi
+        paymentMethod: createPartnerDto.paymentMethod || 'CASH_TO_DRIVER',
       },
     });
 
@@ -34,19 +31,15 @@ export class PartnersService {
     return this.prismaService.partner.findMany({
       where: {
         isActive: true,
-        isPublic: true,
       },
       select: {
         id: true,
         type: true,
         name: true,
         address: true,
-        postalCode: true,
-        city: true,
-        canton: true,
-        latitude: true,
-        longitude: true,
-        deliveryDays: true,
+        phone: true,
+        email: true,
+        isActive: true,
       },
       orderBy: {
         name: 'asc',
@@ -58,14 +51,13 @@ export class PartnersService {
     const partner = await this.prismaService.partner.findUnique({
       where: { id },
       include: {
-        users: {
+        orders: {
           select: {
             id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-            isActive: true,
+            orderNumber: true,
+            status: true,
+            total: true,
+            createdAt: true,
           },
         },
       },

@@ -19,17 +19,9 @@ export class UpdateUserDto {
   @IsOptional()
   lastName?: string;
 
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole;
-
-  @IsString()
-  @IsOptional()
-  partnerId?: string;
 
   @IsBoolean()
   @IsOptional()

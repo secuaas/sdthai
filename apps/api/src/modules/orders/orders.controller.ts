@@ -40,13 +40,13 @@ export class OrdersController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.PARTNER_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.ordersService.update(id, updateOrderDto);
   }
 
   @Delete(':id')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.PARTNER_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.ordersService.remove(id);
   }

@@ -91,33 +91,45 @@ model Partner {
 
 model Product {
   id          String   @id @default(uuid())
-  name        String
+  sku         String   @unique
+  barcode     String?  @unique
+  nameFr      String
   description String?
-  price       Decimal  @db.Decimal(10, 2)
+  priceB2b    Decimal  @db.Decimal(10, 2)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   orderItems OrderItem[]
 
+  @@index([sku])
+  @@index([barcode])
   @@map("products")
 }
 
 model Order {
-  id          String      @id @default(uuid())
-  orderNumber String      @unique
-  partnerId   String
-  partner     Partner     @relation(fields: [partnerId], references: [id])
-  status      OrderStatus @default(PENDING)
-  total       Decimal     @db.Decimal(10, 2)
-  createdBy   String
-  createdByUser User      @relation(fields: [createdBy], references: [id])
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique
+  partnerId       String
+  partner         Partner     @relation(fields: [partnerId], references: [id])
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  status          OrderStatus @default(PENDING)
+  requestedDate   DateTime
+  isUrgent        Boolean     @default(false)
+  urgentReason    String?
+  urgentApproved  Boolean?
+  subtotal        Decimal     @db.Decimal(10, 2)
+  vatAmount       Decimal     @db.Decimal(10, 2)
+  total           Decimal     @db.Decimal(10, 2)
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   items OrderItem[]
 
   @@index([partnerId])
+  @@index([userId])
   @@index([status])
   @@map("orders")
 }

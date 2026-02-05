@@ -22,16 +22,6 @@ export class UsersService {
       throw new ConflictException('Email already exists');
     }
 
-    if (createUserDto.partnerId) {
-      const partner = await this.prismaService.partner.findUnique({
-        where: { id: createUserDto.partnerId },
-      });
-
-      if (!partner) {
-        throw new BadRequestException('Partner not found');
-      }
-    }
-
     const passwordHash = await bcrypt.hash(createUserDto.password, 10);
 
     const { password, ...userData } = createUserDto;
@@ -40,9 +30,6 @@ export class UsersService {
       data: {
         ...userData,
         passwordHash,
-      },
-      include: {
-        partner: true,
       },
     });
 
@@ -53,9 +40,6 @@ export class UsersService {
 
   async findAll() {
     const users = await this.prismaService.user.findMany({
-      include: {
-        partner: true,
-      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -67,9 +51,6 @@ export class UsersService {
   async findOne(id: string) {
     const user = await this.prismaService.user.findUnique({
       where: { id },
-      include: {
-        partner: true,
-      },
     });
 
     if (!user) {
@@ -100,16 +81,6 @@ export class UsersService {
       }
     }
 
-    if (updateUserDto.partnerId) {
-      const partner = await this.prismaService.partner.findUnique({
-        where: { id: updateUserDto.partnerId },
-      });
-
-      if (!partner) {
-        throw new BadRequestException('Partner not found');
-      }
-    }
-
     const updateData: any = { ...updateUserDto };
 
     if (updateUserDto.password) {
@@ -120,9 +91,6 @@ export class UsersService {
     const updatedUser = await this.prismaService.user.update({
       where: { id },
       data: updateData,
-      include: {
-        partner: true,
-      },
     });
 
     const { passwordHash, ...userWithoutPassword } = updatedUser;

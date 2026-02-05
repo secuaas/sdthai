@@ -18,15 +18,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   lastName: string;
 
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
   @IsEnum(UserRole)
   @IsNotEmpty()
   role: UserRole;
-
-  @IsString()
-  @IsOptional()
-  partnerId?: string;
 }

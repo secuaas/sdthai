@@ -40,7 +40,7 @@ export class PartnersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.PARTNER_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   findOne(@Param('id') id: string) {
     return this.partnersService.findOne(id);
   }

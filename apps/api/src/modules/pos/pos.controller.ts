@@ -26,7 +26,7 @@ export class PosController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @Post('transactions')
   async create(@Body() createDto: CreateTransactionDto, @Req() req: any) {
-    return this.posService.create(createDto, req.user.userId);
+    return this.posService.create(createDto, req.user.id);
   }
 
   /**

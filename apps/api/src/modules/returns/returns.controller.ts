@@ -28,7 +28,7 @@ export class ReturnsController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DRIVER)
   @Post()
   async create(@Body() createDto: CreateReturnDto, @Req() req: any) {
-    return this.returnsService.create(createDto, req.user.userId);
+    return this.returnsService.create(createDto, req.user.id);
   }
 
   /**

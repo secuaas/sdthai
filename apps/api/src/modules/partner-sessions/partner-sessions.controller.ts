@@ -15,6 +15,7 @@ import { ValidateSessionCodeDto } from './dto/validate-session-code.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { UserRole } from '@sdthai/prisma';
 
 @Controller('partner-sessions')
@@ -27,6 +28,7 @@ export class PartnerSessionsController {
    * Request a new session code
    * Public endpoint - partners can request sessions
    */
+  @Public()
   @Post('request')
   async requestSession(
     @Body() createDto: CreatePartnerSessionDto,
@@ -45,6 +47,7 @@ export class PartnerSessionsController {
    * Validate a session code
    * Public endpoint - partners use this to authenticate
    */
+  @Public()
   @Post('validate')
   async validateCode(@Body() dto: ValidateSessionCodeDto) {
     return this.partnerSessionsService.validateCode(dto.sessionCode);

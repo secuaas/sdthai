@@ -17,6 +17,6 @@
     "tsx": "^4.7.1",
     "@faker-js/faker": "^8.4.1"
   },
-  "main": "index.ts",
-  "types": "index.ts"
+  "main": "../../node_modules/.prisma/client/index.js",
+  "types": "../../node_modules/.prisma/client/index.d.ts"
 }

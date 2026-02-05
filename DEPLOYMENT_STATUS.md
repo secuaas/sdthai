@@ -28,6 +28,8 @@ L'application SD Thai Food a été déployée avec succès sur le cluster Kubern
 - ✅ Ingress configuré avec TLS (cert-manager)
 - ✅ Secrets Kubernetes créés
 - ✅ DNS configuré: sdthai.secuaas.dev -> 51.161.81.168
+- ✅ PostgreSQL 15-alpine déployé avec PVC 10Gi
+- ✅ Base de données synchronisée avec schéma Prisma (7 tables)
 
 ## Endpoints API Disponibles
 
@@ -77,8 +79,8 @@ L'application SD Thai Food a été déployée avec succès sur le cluster Kubern
 ## Prochaines Étapes
 
 ### Prioritaire
-- [ ] Déployer PostgreSQL sur k8s-dev
-- [ ] Exécuter migrations Prisma
+- [x] Déployer PostgreSQL sur k8s-dev
+- [x] Exécuter migrations Prisma
 - [ ] Créer utilisateur admin initial
 - [ ] Tester l'authentification complète
 
@@ -119,19 +121,32 @@ Commits récents:
 - Ingress: nginx avec TLS automatique
 - LoadBalancer IP: 51.161.81.168
 
+### PostgreSQL
+- Image: `postgres:15-alpine`
+- Stockage: PVC 10Gi (csi-cinder-high-speed)
+- Service interne: `postgres-service.sdthai:5432`
+- Base de données: `sdthai`
+- Tables créées: users, refresh_tokens, partners, products, orders, order_items
+
 ### Monitoring
 ```bash
-# Vérifier les logs
+# Vérifier les logs de l'application
 secuops logs --app sdthai --env k8s-dev
 
-# Vérifier le statut
+# Vérifier le statut des pods
 secuops kubectl --env k8s-dev -- get pods -n sdthai
 
-# Redéployer
+# Vérifier PostgreSQL
+secuops kubectl --env k8s-dev -- exec -n sdthai deployment/postgres -- psql -U sdthai -d sdthai -c "\dt"
+
+# Redéployer l'application
 secuops deploy --app sdthai --env k8s-dev
+
+# Synchroniser le schéma Prisma
+secuops kubectl --env k8s-dev -- apply -f deploy/k8s/postgres/migration-job.yaml
 ```
 
 ---
 
-**Dernière mise à jour:** 2026-02-05 16:20 UTC  
+**Dernière mise à jour:** 2026-02-05 16:36 UTC
 **Version:** 0.1.0 (MVP)

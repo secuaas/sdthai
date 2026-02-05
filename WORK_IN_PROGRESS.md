@@ -95,13 +95,30 @@ Ajouter PostgreSQL au projet et déployer sur k8s-dev avec API fonctionnelle.
 - LATE: Entre 20h J-2 et 05h J-1 (requiert approbation)
 - DEROGATION: Après 05h J-1 (bloqué)
 
+### Tests et Validations ✅
+
+#### Problème Ingress Résolu
+- **Cause**: Port mismatch entre déploiement (80) et application (3000)
+- **Solution**: Patché deployment containerPort et service targetPort à 3000
+- **Résultat**: API accessible externally via https://sdthai.secuaas.dev
+
+#### Tests Endpoints Réussis
+- ✅ GET /api/health - Opérationnel
+- ✅ POST /api/auth/login - Authentification fonctionnelle
+- ✅ GET /api/partner-sessions - Retourne [] (vide, correct)
+- ✅ GET /api/pos/transactions - Retourne [] (vide, correct)
+- ✅ GET /api/returns - Retourne [] (vide, correct)
+- ✅ GET /api/partners - Retourne 6 partenaires (2 DEPOT_AUTOMATE, 4 WITH_DELIVERY)
+- ✅ GET /api/products - Retourne 5 produits actifs
+
 ### Prochaines Étapes
 
 #### Prioritaire
-1. **Résoudre problème ingress externe** (502 Bad Gateway)
-2. Tester tous les nouveaux endpoints avec données réelles
-3. Créer données de test pour POS et Returns
+1. ~~Résoudre problème ingress externe~~ ✅ Fait
+2. ~~Tester tous les nouveaux endpoints~~ ✅ Fait
+3. Créer données de test pour POS et Returns (via API ou script)
 4. Tester flows partner sessions end-to-end
+5. Documenter exemples d'utilisation des nouveaux endpoints
 
 #### Fonctionnalités Restantes ARCHITECTURE_UPDATES.md
 1. ~~Codes de session partenaires~~ ✅ Fait
@@ -140,6 +157,14 @@ Email: admin@sdthai.ch
 Password: Admin123!
 Role: SUPER_ADMIN
 ```
+
+## Session 2026-02-05 PM - Architecture Updates Phase 1
+
+### Infrastructure Fix
+**Port Mismatch Résolu:**
+- Problème: Déploiement K8s configuré pour port 80, application écoute sur 3000
+- Solution: `kubectl patch deployment` + `kubectl patch service` pour utiliser port 3000
+- Résultat: Ingress externe maintenant fonctionnel
 
 ## Session 2026-02-05 PM - Architecture Updates Phase 1
 

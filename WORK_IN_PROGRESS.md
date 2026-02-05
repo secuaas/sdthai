@@ -1,13 +1,13 @@
 # Travaux en Cours - SD Thai Food
 
 ## Dernière mise à jour
-2026-02-05 19:30 UTC
+2026-02-05 20:15 UTC
 
 ## Version Actuelle
-0.4.2
+0.4.3
 
 ## Statut
-✅ **Phase 1 & 2 complètes + Documentation Swagger/OpenAPI**
+✅ **Phase 1 & 2 complètes + Documentation Swagger 6/9 modules core**
 
 ## Session 2026-02-05
 

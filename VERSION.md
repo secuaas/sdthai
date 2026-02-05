@@ -1,15 +1,50 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.4.2** - 2026-02-05
+**0.4.3** - 2026-02-05
 
 ---
 
 ## Versions
 
+### 0.4.3 - 2026-02-05
+**Commits:** `bc05764`
+**Type:** Patch - Swagger documentation étendue à tous les modules core
+
+**Changements:**
+- ✅ Documentation Swagger complète pour UsersController
+- ✅ Documentation Swagger complète pour PartnersController (incluant endpoint public)
+- ✅ Documentation Swagger complète pour ProductsController (avec recherche par barcode)
+- ✅ Décorateurs @ApiOperation, @ApiResponse, @ApiParam sur tous les endpoints
+- ✅ Documentation role-based access control (SUPER_ADMIN restrictions)
+- ✅ Guide FIX_502_ISSUE.md créé (résolution problème service K8s)
+- ✅ SESSION_REPORT_2026-02-05.md créé (rapport complet de session)
+
+**Modules Swagger Complets (6/9):**
+- ✅ Auth (login, refresh, logout, me)
+- ✅ Users (CRUD Super Admin)
+- ✅ Partners (CRUD + endpoint public)
+- ✅ Products (CRUD + barcode search)
+- ✅ Orders (CRUD + ON_SITE delivery)
+- ⏳ PartnerSessions, POS, Returns, Stock (à documenter)
+
+**Documentation Créée:**
+- `FIX_502_ISSUE.md` - Guide détaillé résolution 502 Bad Gateway
+- `SESSION_REPORT_2026-02-05.md` - Rapport complet (versions 0.4.0 → 0.4.3)
+- Mémoire mise à jour avec patterns NestJS/Prisma/Kubernetes
+
+**Tests effectués:**
+- ✅ Build API réussi avec nouvelle documentation
+- ✅ Compilation sans erreurs TypeScript
+
+**Commits inclus:**
+- `bc05764` - feat: Complete Swagger documentation for Users, Partners, Products
+
+---
+
 ### 0.4.2 - 2026-02-05
-**Commits:** `2d595d9`, `3945f13`
-**Type:** Patch - Documentation Swagger/OpenAPI complète
+**Commits:** `2d595d9`, `3945f13`, `4178d34`
+**Type:** Patch - Documentation Swagger/OpenAPI initiale
 
 **Changements:**
 - ✅ Installation @nestjs/swagger package

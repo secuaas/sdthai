@@ -85,6 +85,8 @@ export class OrdersService {
         urgentApproved: createOrderDto.isUrgent ? null : undefined,
         deadlineType: deadlineInfo.deadlineType as any,
         requiresApproval: deadlineInfo.requiresApproval,
+        deliveryType: createOrderDto.deliveryType || 'STANDARD',
+        onSiteDeliveryTime: createOrderDto.onSiteDeliveryTime ? new Date(createOrderDto.onSiteDeliveryTime) : null,
         subtotal,
         vatAmount,
         total,

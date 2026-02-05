@@ -15,8 +15,9 @@ cleanup() {
 trap cleanup SIGTERM SIGINT
 
 # Start Next.js frontend on port 3001 in background
+# Note: In standalone mode with monorepo, path is preserved inside standalone/
 echo "[Frontend] Starting Next.js on port 3001..."
-cd /app/apps/web
+cd /app/apps/web/apps/web
 HOSTNAME="0.0.0.0" PORT=3001 node server.js &
 FRONTEND_PID=$!
 

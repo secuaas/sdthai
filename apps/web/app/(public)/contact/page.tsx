@@ -49,7 +49,7 @@ export default function ContactPage() {
             Contactez-Nous
           </h1>
           <p className="text-xl max-w-3xl mx-auto">
-            Une question ? Une suggestion ? N'hésitez pas à nous contacter
+            Une question ? Une suggestion ? N&apos;hésitez pas à nous contacter
           </p>
         </div>
       </section>

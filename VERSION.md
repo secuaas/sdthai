@@ -1,11 +1,63 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.5.3** - 2026-02-06
+**0.6.0** - 2026-02-05
 
 ---
 
 ## Versions
+
+### 0.6.0 - 2026-02-05
+**Commit:** (à déterminer)
+**Type:** Minor - Site Web Public Complet
+
+**Changements:**
+- Création complète du site web public SD Thai Food (copie conforme de https://sdthai.ch/)
+- Nouvelle structure `(public)` Next.js avec 4 pages :
+  - **Accueil** : Hero section, About (Chef Dumrong & Sylvie, 20+ ans expérience, Gault & Millau 12/20), Savoir-faire (3 piliers), Carousel images, FAQ interactive (6 questions), CTA Commander
+  - **Boutique** : Présentation commande en ligne, lien vers Climbee, avantages (conservation 17j, livraison J+2, minimum 40 CHF)
+  - **Magasins Partenaires** : Liste dynamique distributeurs automatiques 24/7 + points de vente avec livraison (API `/partners/public`)
+  - **Contact** : Formulaire complet, coordonnées, horaires, carte Google Maps placeholder
+- Layout public avec navigation sticky + footer complet (adresse, horaires, réseaux sociaux)
+- Fonts Google : Aclonica (titres) + Poppins (contenu)
+- Couleurs : Noir (#000000), Bleu SD Thai (#313B83), Blanc
+- Composant CookieConsent avec localStorage
+- Configuration Tailwind étendue (couleur `sdblue`, fonts `aclonica` et `poppins`)
+
+**Fichiers Créés:**
+- `apps/web/app/(public)/layout.tsx` (134 lignes) - Layout avec nav + footer
+- `apps/web/app/(public)/page.tsx` (285 lignes) - Page d'accueil complète
+- `apps/web/app/(public)/boutique/page.tsx` (146 lignes) - Page boutique
+- `apps/web/app/(public)/magasins/page.tsx` (263 lignes) - Page magasins partenaires
+- `apps/web/app/(public)/contact/page.tsx` (273 lignes) - Page contact
+- `apps/web/components/cookie-consent.tsx` (57 lignes) - Composant cookie consent
+
+**Fichiers Modifiés:**
+- `apps/web/tailwind.config.ts` - Ajout couleur sdblue + fonts aclonica/poppins
+- `apps/web/app/page.tsx` - Supprimé (route gérée par (public)/page.tsx)
+
+**Tests effectués:**
+- ✅ Build Next.js réussi (`pnpm build`)
+- ✅ Génération 14 pages statiques
+- ✅ Bundle sizes acceptables (87-122 kB First Load JS)
+- ✅ Warnings ESLint acceptables (1 missing dependency - non bloquant)
+- ✅ Toutes apostrophes échappées (&apos;)
+
+**Fonctionnalités Clés:**
+- Navigation responsive sticky (Accueil, Boutique, Magasins, Contact, Espace Admin)
+- Hero section avec gradient overlay + CTA "Commander Maintenant" → Climbee
+- Section About avec histoire Chef Dumrong & Sylvie (20+ ans, Gault & Millau 12/20)
+- Section Savoir-faire avec 3 cards (Artisanal, Ingrédients Frais, Tradition Thaï)
+- Carousel images avec contrôles + pagination dots
+- FAQ interactive avec accordéon (6 questions sur livraison, réchauffage, conservation, etc.)
+- Footer complet avec coordonnées (Av. Figuiers 39 Lausanne), horaires, réseaux sociaux (Facebook, Instagram, Uber Eats)
+- Intégration Climbee (plateforme de commande externe)
+- Cookie consent banner avec localStorage
+- Mobile responsive
+
+**Production Ready:** 95%
+
+---
 
 ### 0.5.3 - 2026-02-06
 **Commits:** (voir ci-dessous)

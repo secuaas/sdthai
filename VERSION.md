@@ -1,11 +1,38 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.6.0** - 2026-02-05
+**0.6.1** - 2026-02-06
 
 ---
 
 ## Versions
+
+### 0.6.1 - 2026-02-06
+**Commit:** (en cours)
+**Type:** Patch - Fix Authentication Compatibility
+
+**Changements:**
+- Correction compatibilité format API authentication (accessToken vs access_token)
+- Support des deux formats dans AuthResponse et AuthProvider
+- Correction routes de redirection après login (route groups n'apparaissent pas dans l'URL)
+- Mise à jour User type pour supporter SUPER_ADMIN role
+- Support des champs firstName/lastName en plus de nom/prenom
+
+**Fichiers Modifiés:**
+- `apps/web/lib/api-client.ts` - Support both accessToken/access_token, firstName/lastName, SUPER_ADMIN role
+- `apps/web/providers/auth-provider.tsx` - Auto-detect token format, redirect to /dashboard (not /admin/dashboard)
+
+**Problème Résolu:**
+- La connexion retournait une erreur car le backend utilise camelCase (accessToken) alors que le frontend attendait snake_case (access_token)
+- Les routes admin étaient inaccessibles car le code redirige vers /admin/dashboard au lieu de /dashboard
+
+**Tests Effectués:**
+- ✅ Build Next.js réussi
+- ✅ Authentification fonctionnelle avec token JWT
+- ✅ Redirection correcte vers /dashboard après login
+- ✅ Déploiement sur k8s-dev réussi
+
+---
 
 ### 0.6.0 - 2026-02-05
 **Commit:** (à déterminer)

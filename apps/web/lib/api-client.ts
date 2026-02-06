@@ -131,16 +131,22 @@ export interface RegisterDto {
 }
 
 export interface AuthResponse {
-  access_token: string;
+  // Support both formats
+  access_token?: string;
+  accessToken?: string;
+  refreshToken?: string;
   user: User;
 }
 
 export interface User {
   id: string;
   email: string;
-  nom: string;
-  prenom: string;
-  role: 'ADMIN' | 'PARTNER';
+  // Support both formats
+  nom?: string;
+  prenom?: string;
+  firstName?: string;
+  lastName?: string;
+  role: 'ADMIN' | 'PARTNER' | 'SUPER_ADMIN';
   partenaire?: Partner;
 }
 

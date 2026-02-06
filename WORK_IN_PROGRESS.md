@@ -1,13 +1,14 @@
 # Travaux en Cours - SD Thai Food
 
 ## Dernière mise à jour
-2026-02-05 23:30 UTC
+2026-02-06 20:30 UTC
 
 ## Version Actuelle
-0.6.0
+0.6.1
 
 ## Statut
 ✅ **TOUTES LES PHASES COMPLÈTES - Backend + Frontend Admin + Mobile + Site Web Public + Déployé**
+✅ **AUTHENTIFICATION CORRIGÉE - Compatibilité API backend/frontend**
 
 ## Session 2026-02-05 PM - Site Web Public (v0.6.0)
 
@@ -191,6 +192,54 @@ Créer un site web public complet qui est une copie conforme de https://sdthai.c
 - Documentation: 95%
 - Tests: 25%
 - Déploiement: 100% (API + Frontend fonctionnels)
+
+---
+
+## Session 2026-02-06 PM - Fix Authentication (v0.6.1)
+
+### Objectif
+Corriger le problème de connexion - incompatibilité format API entre backend et frontend.
+
+### Problème Identifié
+1. **Backend retourne:** `accessToken` (camelCase) + `firstName`/`lastName`
+2. **Frontend attendait:** `access_token` (snake_case) + `nom`/`prenom`
+3. **Routes incorrectes:** Redirection vers `/admin/dashboard` qui n'existe pas (route groups ne font pas partie de l'URL)
+
+### Corrections Effectuées
+
+#### 1. Support Multi-format dans api-client.ts
+- ✅ `AuthResponse` accepte maintenant `accessToken` ET `access_token`
+- ✅ Ajout `refreshToken` dans AuthResponse
+- ✅ `User` type supporte `firstName`/`lastName` ET `nom`/`prenom`
+- ✅ Ajout role `SUPER_ADMIN` en plus de `ADMIN` et `PARTNER`
+
+#### 2. Détection Automatique dans auth-provider.tsx
+- ✅ Auto-détection du format de token: `(response as any).accessToken || response.access_token`
+- ✅ Support role `SUPER_ADMIN` pour redirection admin
+- ✅ Correction redirection: `/dashboard` au lieu de `/admin/dashboard`
+- ✅ Commentaire explicatif sur les route groups Next.js
+
+### Tests Effectués
+- ✅ Build Next.js réussi (14 pages statiques)
+- ✅ Test authentification API: Token JWT valide retourné
+- ✅ Déploiement Docker image réussi
+- ✅ Push vers registry OVH réussi
+- ✅ Rollout restart deployment réussi
+- ✅ Pod Running sans erreurs
+- ✅ Page /login accessible
+- ✅ Page /dashboard accessible
+
+### Fichiers Modifiés
+1. `apps/web/lib/api-client.ts` (lignes 133-145)
+2. `apps/web/providers/auth-provider.tsx` (lignes 47-67)
+3. `VERSION.md` - Version 0.6.1
+4. `WORK_IN_PROGRESS.md` - Ce fichier
+
+### Résultat
+✅ **Connexion opérationnelle sur https://sdthai.secuaas.dev/login**
+- Login: admin@sdthai.ch / Admin123!
+- Redirection automatique vers /dashboard après authentification
+- Compatibilité backward avec les deux formats d'API
 
 ---
 

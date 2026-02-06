@@ -47,15 +47,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (credentials: LoginDto) => {
     try {
       const response = await authApi.login(credentials);
-      apiClient.setToken(response.access_token);
+      // Support both camelCase (accessToken) and snake_case (access_token)
+      const token = (response as any).accessToken || response.access_token;
+      apiClient.setToken(token);
       setUser(response.user);
       localStorage.setItem('user', JSON.stringify(response.user));
 
-      // Rediriger selon le rôle
-      if (response.user.role === 'ADMIN') {
-        router.push('/admin/dashboard');
+      // Rediriger selon le rôle (support SUPER_ADMIN aussi)
+      // Note: route groups like (admin) don't appear in URLs
+      if (response.user.role === 'ADMIN' || response.user.role === 'SUPER_ADMIN') {
+        router.push('/dashboard');
       } else {
-        router.push('/partner/dashboard');
+        router.push('/dashboard');
       }
     } catch (error) {
       console.error('Login failed:', error);

@@ -1,13 +1,37 @@
 # Travaux en Cours - SD Thai Food
 
 ## Dernière mise à jour
-2026-02-05 22:30 UTC
+2026-02-06 00:25 UTC
 
 ## Version Actuelle
-0.5.0
+0.5.3
 
 ## Statut
-✅ **Phases 1, 2, 3 & 4 COMPLÈTES - Backend + Frontend + Mobile**
+✅ **Phases 1, 2, 3 & 4 COMPLÈTES - Backend + Frontend + Mobile + Déployé**
+
+## Session 2026-02-06 - Fix Page Blanche (v0.5.3)
+
+### Problème
+Page blanche sur https://sdthai.secuaas.dev - tous les fichiers `_next/static/*.js` retournaient 404 avec MIME `text/html`.
+
+### Diagnostic
+- Next.js standalone en monorepo place `server.js` à `/app/apps/web/apps/web/server.js`
+- Le Dockerfile copiait `.next/static` vers `/app/apps/web/.next/static` (inaccessible à server.js)
+- L'API URL était hardcodée `http://localhost:3000` (non fonctionnel en production)
+- Le `deploy-k8s.yaml` était obsolète (1 seul service, pas de routing frontend)
+
+### Corrections
+1. **Dockerfile** - Copie static/public vers `./apps/web/apps/web/.next/static` et `./apps/web/apps/web/public`
+2. **API URL** - Default `''` (URLs relatives `/api`) dans `next.config.js` et `api-client.ts`
+3. **deploy-k8s.yaml** - 2 services (api:3000, frontend:3001) + ingress path routing `/api` et `/`
+
+### Résultat
+- ✅ Frontend charge correctement (login, dashboard, toutes les pages)
+- ✅ API health OK avec database connected
+- ✅ Static assets servis avec bon MIME type
+- ✅ Déploiement opérationnel sur https://sdthai.secuaas.dev
+
+---
 
 ## Session 2026-02-05 PM - Version 0.5.0 (Phase 3 & 4)
 
@@ -197,13 +221,13 @@ Implémenter toutes les fonctionnalités frontend (Phase 3) et créer l'applicat
   - ✅ Capture photos
   - ✅ POS mobile (dépendra du besoin réel)
 
-**Production Ready: 85%**
+**Production Ready: 90%**
 - Backend API: 100%
 - Frontend Web: 100%
 - Mobile App: 100% (Returns module)
 - Documentation: 90%
 - Tests: 20%
-- Déploiement: 80% (502 à résoudre)
+- Déploiement: 100% ✅ (frontend + API fonctionnels)
 
 ---
 

@@ -1,10 +1,12 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: sdthai
   namespace: sdthai
   labels:
-    app: sdthai
+    app.kubernetes.io/managed-by: secuops
+    app.kubernetes.io/name: sdthai
 spec:
   replicas: 1
   selector:
@@ -18,13 +20,18 @@ spec:
       containers:
       - name: fullstack
         image: qq9o8vqe.c1.bhs5.container-registry.ovh.net/secuops/sdthai:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 3000
+          name: api
+        - containerPort: 3001
+          name: frontend
+        envFrom:
+        - secretRef:
+            name: sdthai-secrets
         env:
-        - name: ENV
-          value: "k8s-dev"
-        - name: PORT
-          value: "3000"
+        - name: NODE_ENV
+          value: "production"
         resources:
           requests:
             memory: "256Mi"
@@ -44,15 +51,14 @@ spec:
             port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5
+      imagePullSecrets:
+      - name: registry-secret
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: sdthai
+  name: sdthai-api
   namespace: sdthai
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Service","metadata":{"name":"sdthai","namespace":"sdthai"},"spec":{"ports":[{"port":80,"protocol":"TCP","targetPort":3000}],"selector":{"app":"sdthai"},"type":"ClusterIP"}}
 spec:
   selector:
     app: sdthai
@@ -62,27 +68,52 @@ spec:
     targetPort: 3000
   type: ClusterIP
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sdthai-frontend
+  namespace: sdthai
+spec:
+  selector:
+    app: sdthai
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3001
+  type: ClusterIP
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: sdthai
   namespace: sdthai
   annotations:
-    kubernetes.io/ingress.class: traefik
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - sdthai.secuaas.dev
-    secretName: sdthai-tls
+    secretName: sdthai-secuaas-dev-tls
   rules:
   - host: sdthai.secuaas.dev
     http:
       paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: sdthai-api
+            port:
+              number: 80
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: sdthai
+            name: sdthai-frontend
             port:
               number: 80

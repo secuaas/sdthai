@@ -1,11 +1,42 @@
 # Historique des Versions - SD Thai Food
 
 ## Version Actuelle
-**0.5.2** - 2026-02-05
+**0.5.3** - 2026-02-06
 
 ---
 
 ## Versions
+
+### 0.5.3 - 2026-02-06
+**Commits:** (voir ci-dessous)
+**Type:** Patch - Fix page blanche frontend (404 static assets)
+
+**Problème Résolu:**
+- Page blanche sur https://sdthai.secuaas.dev
+- Tous les fichiers `_next/static/chunks/*.js` retournaient 404 avec MIME `text/html`
+- Cause racine: fichiers statiques Next.js copiés au mauvais emplacement dans le container Docker
+
+**Changements:**
+- Fix Dockerfile: copie `.next/static` et `public` vers `./apps/web/apps/web/` (chemin relatif à server.js en mode standalone monorepo)
+- Fix API URL: passage de `http://localhost:3000` à `''` (URLs relatives `/api`) pour compatibilité K8s
+- Mise à jour deploy-k8s.yaml: architecture correcte avec 2 services (api:3000, frontend:3001) + ingress path routing
+
+**Fichiers Modifiés:**
+- `Dockerfile` (lignes 132-136) - Correction paths COPY pour static/public
+- `apps/web/next.config.js` - NEXT_PUBLIC_API_URL default '' au lieu de localhost
+- `apps/web/lib/api-client.ts` - API_URL default '' pour URLs relatives
+- `deploy-k8s.yaml` - Architecture 2 services + ingress path-based routing
+
+**Tests effectués:**
+- ✅ Build Docker multi-stage réussi
+- ✅ Push image vers OVH Harbor Registry
+- ✅ Rollout deployment K8s
+- ✅ `curl /_next/static/chunks/webpack-*.js` → 200 application/javascript
+- ✅ `curl /api/health` → 200 {"status":"ok","database":"connected"}
+- ✅ `curl /login` → 200 HTML complet avec formulaire
+- ✅ Frontend et API fonctionnels depuis https://sdthai.secuaas.dev
+
+---
 
 ### 0.5.2 - 2026-02-05
 **Commits:** `1e58dc6`, `28b4aea`, `e352220`
@@ -458,14 +489,13 @@ Le manifest deploy-k8s.yaml est maintenant correct avec le port 3000. Si 502 per
 
 ## Prochaine Version Prévue
 
-### 0.3.0 - À venir
+### 0.6.0 - À venir
 **Fonctionnalités planifiées:**
-- [ ] Codes de session partenaires
-- [ ] Système POS pour DEPOT_AUTOMATE
-- [ ] Gestion des retours via mobile
-- [ ] Validation deadline 20h pour J+2
-- [ ] Option livraison sur place
 - [ ] Tests unitaires et E2E
+- [ ] CI/CD avec GitHub Actions
+- [ ] Monitoring (health dashboard)
+- [ ] Cache Redis
+- [ ] Rate limiting API
 
 ---
 

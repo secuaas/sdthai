@@ -129,9 +129,11 @@ COPY --from=backend-builder --chown=sdthai:nodejs /app/apps/api/dist ./apps/api/
 COPY --from=backend-builder --chown=sdthai:nodejs /app/apps/api/package.json ./apps/api/
 
 # Copy built frontend (Next.js standalone)
+# In monorepo standalone mode, server.js is at ./apps/web/apps/web/server.js
+# Static and public files must be placed relative to server.js
 COPY --from=frontend-builder --chown=sdthai:nodejs /app/apps/web/.next/standalone ./apps/web/
-COPY --from=frontend-builder --chown=sdthai:nodejs /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=frontend-builder --chown=sdthai:nodejs /app/apps/web/public ./apps/web/public
+COPY --from=frontend-builder --chown=sdthai:nodejs /app/apps/web/.next/static ./apps/web/apps/web/.next/static
+COPY --from=frontend-builder --chown=sdthai:nodejs /app/apps/web/public ./apps/web/apps/web/public
 
 # Copy workspace files
 COPY --chown=sdthai:nodejs pnpm-workspace.yaml package.json ./

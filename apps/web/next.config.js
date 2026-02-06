@@ -19,7 +19,7 @@ const nextConfig = {
 
   // Variables d'environnement exposées au client
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '',
   },
 
   // Désactiver la telemetry Next.js (optionnel)

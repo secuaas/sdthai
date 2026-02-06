@@ -70,7 +70,7 @@ export default function HomePage() {
           </p>
           <p className="text-xl mb-12 max-w-3xl mx-auto font-light">
             Découvrez la vraie cuisine thaïlandaise, préparée avec amour par le Chef Dumrong.
-            Plus de 20 ans d'expérience, reconnaissance Gault & Millau 12/20.
+            Plus de 20 ans d&apos;expérience, reconnaissance Gault & Millau 12/20.
           </p>
           <a
             href="https://climbee.app/s/sd-thai-food"

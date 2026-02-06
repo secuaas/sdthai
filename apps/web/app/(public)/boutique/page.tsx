@@ -80,7 +80,7 @@ export default function BoutiquePage() {
               <div>
                 <h3 className="font-semibold text-xl mb-2">Conservation 17 Jours</h3>
                 <p className="text-gray-700">
-                  Nos plats se conservent jusqu'à 17 jours au réfrigérateur. Commandez pour toute la semaine !
+                  Nos plats se conservent jusqu&apos;à 17 jours au réfrigérateur. Commandez pour toute la semaine !
                 </p>
               </div>
             </div>

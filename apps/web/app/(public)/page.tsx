@@ -97,16 +97,16 @@ export default function HomePage() {
               </h2>
               <p className="text-lg mb-4 text-gray-700 leading-relaxed">
                 <strong className="text-sdblue">Chef Dumrong</strong> et son épouse <strong className="text-sdblue">Sylvie</strong> ont créé SD Thai Food avec une passion commune :
-                partager l'authentique cuisine thaïlandaise avec la Suisse romande.
+                partager l&apos;authentique cuisine thaïlandaise avec la Suisse romande.
               </p>
               <p className="text-lg mb-4 text-gray-700 leading-relaxed">
-                Avec <strong>plus de 20 ans d'expérience</strong> dans la restauration thaïlandaise,
+                Avec <strong>plus de 20 ans d&apos;expérience</strong> dans la restauration thaïlandaise,
                 le Chef Dumrong apporte son expertise et son amour des saveurs traditionnelles de Thaïlande.
               </p>
               <p className="text-lg mb-4 text-gray-700 leading-relaxed">
                 Reconnus par le <strong className="text-sdblue">Gault & Millau avec une note de 12/20</strong>,
                 nous sommes fiers de proposer des plats qui respectent les traditions culinaires thaïlandaises
-                tout en s'adaptant aux goûts suisses.
+                tout en s&apos;adaptant aux goûts suisses.
               </p>
             </div>
             <div className="relative h-96 rounded-lg overflow-hidden shadow-2xl">

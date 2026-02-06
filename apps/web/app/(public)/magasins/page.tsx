@@ -226,7 +226,7 @@ export default function MagasinsPage() {
               <div>
                 <h3 className="font-semibold text-lg mb-2">Conservation</h3>
                 <p className="text-gray-700">
-                  Tous nos plats se conservent 17 jours au réfrigérateur dans leur emballage d'origine fermé.
+                  Tous nos plats se conservent 17 jours au réfrigérateur dans leur emballage d&apos;origine fermé.
                 </p>
               </div>
             </div>

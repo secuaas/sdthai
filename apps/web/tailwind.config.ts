@@ -50,6 +50,11 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        sdblue: "#313B83",
+      },
+      fontFamily: {
+        aclonica: ['var(--font-aclonica)', 'sans-serif'],
+        poppins: ['var(--font-poppins)', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
